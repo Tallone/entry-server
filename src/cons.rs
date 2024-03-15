@@ -1,1 +1,1 @@
-pub const ENV_CONFIG_PATH: &str = "config_path";
+pub const ENV_CONFIG_PATH: &str = "ENTRY_CONFIG_PATH";

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{cons, error::Result};
 
 #[derive(Default, Serialize, Deserialize)]
-pub struct AppConf {
+pub struct ApplicationConf {
   pub db: DatabaseConf,
 }
 
@@ -15,7 +15,7 @@ pub struct DatabaseConf {
   pub url: String,
 }
 
-impl AppConf {
+impl ApplicationConf {
   pub fn from_yaml(path: Option<&str>) -> Result<Self> {
     let p: String = path
       .map(|s| s.to_owned())
@@ -45,14 +45,14 @@ mod tests {
 
   #[test]
   fn test_to_yaml() {
-    let conf = AppConf::default();
+    let conf = ApplicationConf::default();
     let ct = conf.to_yaml();
     write("./entry-config.yaml", ct).unwrap();
   }
 
   #[test]
   fn test_from_yaml() {
-    let conf = AppConf::from_yaml(Some("./entry-config.yaml"));
+    let conf = ApplicationConf::from_yaml(Some("./entry-config.yaml"));
     conf.unwrap();
   }
 }

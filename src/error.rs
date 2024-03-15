@@ -13,4 +13,7 @@ pub enum ApplicationError {
   // FileNotFound(String),
   #[error("IO Error: {0}")]
   IO(#[from] io::Error),
+
+  #[error("DB Error: {0}")]
+  DB(#[from] sqlx::Error),
 }
