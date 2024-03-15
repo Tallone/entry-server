@@ -1,2 +1,4 @@
 # entry-server
-This project aims to provide independent developers with ready-to-use server functionalities, including CRM, License, and Data synchronization. 该项目提供给那些独立开发者开箱即用的服务端功能，包括客户管理、许可证和数据同步功能
+This project aims to provide independent developers with ready-to-use server functionalities, including CRM, License, and Data synchronization. 
+
+This open source project provides an **out-of-the-box service**, leveraging the power of Rust to offer you an incredibly **fast**, **high-performance**, and **secure** solution to meet your deployment needs. With **Docker deployment** support, you can enjoy a **one-click startup** experience, simplifying your operations and saving valuable time.

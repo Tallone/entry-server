@@ -1,0 +1,37 @@
+[package]
+name = "entry-server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.81"
+log = "0.4.21"
+rand = "0.8.5"
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.114"
+serde_yaml = "0.9.32"
+sqlx = { version = "0.7.4", features = [
+  "runtime-tokio",
+  "postgres",
+  "macros",
+  "uuid",
+  "json",
+] }
+thiserror = "1.0.58"
+tokio = { version = "1.36.0", features = ["full"] }
+uuid = "1.7.0"
+
+
+[profile.release]
+codegen-units = 1
+incremental = true
+lto = true
+opt-level = 'z'    # Optimize for size
+
+[profile.bench]
+codegen-units = 1
+incremental = true
+lto = true
+opt-level = 'z'    # Optimize for size
