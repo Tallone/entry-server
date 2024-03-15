@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:16.2-alpine
+    container_name: entry-db
+    environment:
+      TZ: Asia/Shanghai
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - entry-postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: entry-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - entry-redis:/data
+    ports:
+      - "6379:6379"
+
+volumes:
+  entry-postgres:
+  entry-redis:

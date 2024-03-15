@@ -1,2 +1,2 @@
 db:
-  url: ''
+  url: "postgres://entry_server:224125@localhost:5432/entry"
