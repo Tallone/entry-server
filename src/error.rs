@@ -2,18 +2,37 @@ use std::io;
 
 use thiserror::Error;
 
-pub type Result<T> = std::result::Result<T, ApplicationError>;
+use crate::cons;
 
 #[derive(Error, Debug)]
-pub enum ApplicationError {
+pub enum AppError {
   #[error(transparent)]
-  Other(#[from] anyhow::Error),
+  Biz(#[from] anyhow::Error),
 
-  // #[error("The file path '{0}' could not be found")]
-  // FileNotFound(String),
   #[error("IO Error: {0}")]
   IO(#[from] io::Error),
 
   #[error("DB Error: {0}")]
-  DB(#[from] sqlx::Error),
+  Db(#[from] sea_orm::DbErr),
+
+  #[error("Unhandled internal error")]
+  Unknown,
+}
+
+impl AppError {
+  pub fn code(&self) -> u32 {
+    match self {
+      AppError::Biz(_) => 4000,
+      AppError::IO(_) => 1500,
+      AppError::Db(_) => 1510,
+      AppError::Unknown => 9999,
+    }
+  }
+
+  pub fn message(&self) -> String {
+    match self {
+      AppError::Biz(_) | AppError::Unknown => self.to_string(),
+      _ => cons::MSG_INTERNAL_ERROR.to_string(),
+    }
+  }
 }

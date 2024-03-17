@@ -1,14 +1,15 @@
-use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use sea_orm::{Database, DatabaseConnection};
 
-use crate::{conf::ApplicationConf, error::Result};
+use crate::{conf::ApplicationConf, error::AppError};
 
 pub struct DB {
-  pub pool: Pool<Postgres>,
+  pub conn: DatabaseConnection,
 }
 
 impl DB {
-  pub async fn new(conf: &ApplicationConf) -> Result<Self> {
-    let pool = PgPoolOptions::new().max_connections(20).connect(&conf.db.url).await?;
-    Ok(Self { pool: pool })
+  pub async fn new(conf: &ApplicationConf) -> Result<Self, AppError> {
+    let conn = Database::connect(&conf.db.url).await?;
+
+    Ok(Self { conn })
   }
 }

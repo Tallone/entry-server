@@ -1,17 +1,18 @@
 use anyhow::Ok;
-use axum::Router;
+use axum::{error_handling::HandleErrorLayer, Router};
 use conf::ApplicationConf;
 use db::DB;
 use dotenvy::dotenv;
 use env_logger::Env;
 use log::info;
+use tower::ServiceBuilder;
 
 mod conf;
 mod cons;
 mod db;
 mod domain;
 mod error;
-mod route;
+mod middleware;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -19,9 +20,8 @@ async fn main() -> anyhow::Result<()> {
   env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
   let conf = ApplicationConf::from_yaml(None)?;
   let db = DB::new(&conf).await?;
-  sqlx::migrate!().run(&db.pool).await?;
 
-  let app = Router::new();
+  let app = Router::new().nest("/api", domain::router());
 
   let listener = tokio::net::TcpListener::bind(&conf.server.addr).await?;
   info!("listening on {}", listener.local_addr().unwrap());

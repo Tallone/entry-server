@@ -3,7 +3,7 @@ use std::fs;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 
-use crate::{cons, error::Result};
+use crate::{cons, error::AppError};
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct ApplicationConf {
@@ -23,7 +23,7 @@ pub struct ServerConf {
 }
 
 impl ApplicationConf {
-  pub fn from_yaml(path: Option<&str>) -> Result<Self> {
+  pub fn from_yaml(path: Option<&str>) -> Result<Self, AppError> {
     let p: String = path
       .map(|s| s.to_owned())
       .or_else(|| std::env::var_os(cons::ENV_CONFIG_PATH).and_then(|s| s.to_str().map(|s| s.to_owned())))
