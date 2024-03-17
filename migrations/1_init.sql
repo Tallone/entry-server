@@ -1,29 +1,31 @@
 -- Create the Users table
 CREATE TABLE Users (
-    user_id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    password TEXT NOT NULL,
+    hash TEXT NOT NULL,
+    status SMALLINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create the Products table
 CREATE TABLE licenses (
-    license_id SERIAL PRIMARY KEY,
-    license_key TEXT UNIQUE NOT NULL,
+    id SERIAL PRIMARY KEY,
+    key TEXT UNIQUE NOT NULL,
     status SMALLINT NOT NULL,
     valid_until TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create the ActivationLogs table
 CREATE TABLE activations (
-    activation_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     license_id INT NOT NULL,
     user_id UUID NOT NULL,
     device_id TEXT,
     ip_address TEXT NOT NULL,
     activation_date TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

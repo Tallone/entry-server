@@ -7,12 +7,19 @@ use crate::{cons, error::Result};
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct ApplicationConf {
+  pub server: ServerConf,
   pub db: DatabaseConf,
 }
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct DatabaseConf {
   pub url: String,
+}
+
+/// Server configuration
+#[derive(Serialize, Deserialize)]
+pub struct ServerConf {
+  pub addr: String,
 }
 
 impl ApplicationConf {
@@ -37,6 +44,14 @@ impl ApplicationConf {
   }
 }
 
+impl Default for ServerConf {
+  fn default() -> Self {
+    Self {
+      addr: cons::DEFAULT_SERVER_ADDR.into(),
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use std::fs::write;
@@ -46,7 +61,7 @@ mod tests {
   #[test]
   fn test_to_yaml() {
     let conf = ApplicationConf::default();
-    let ct = conf.to_yaml();
+    let ct: String = conf.to_yaml();
     write("./entry-config.yaml", ct).unwrap();
   }
 

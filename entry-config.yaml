@@ -1,2 +1,4 @@
+server:
+  addr: 127.0.1:3000
 db:
-  url: "postgres://entry_server:224125@localhost:5432/entry"
+  url: postgres://entry_server:224125@localhost:5432/entry
