@@ -1,9 +1,7 @@
-#![warn(unused_imports)]
-
-use std::sync::Arc;
+#![warn(unused_imports, clippy::expect_fun_call)]
 
 use anyhow::Ok;
-use axum::{extract::Extension, Router};
+use axum::Router;
 use conf::ApplicationConf;
 use db::DB;
 use dotenvy::dotenv;
@@ -25,7 +23,7 @@ mod tool;
 async fn main() -> anyhow::Result<()> {
   dotenv().expect(".env file not found");
   logger::init();
-  let conf = ApplicationConf::from_yaml(None)?;
+  let conf = ApplicationConf::from_env();
   let db = DB::new(&conf).await?;
 
   let state = state::AppState { db };

@@ -7,18 +7,18 @@ use crate::error::AppError;
 pub struct ApiResponse<T> {
   code: u32,
   message: String,
-  data: T,
+  data: Option<T>,
 }
 
 impl<T> ApiResponse<T>
 where
-  T: serde::Serialize + Default,
+  T: serde::Serialize,
 {
   pub fn ok(data: T) -> Self {
     Self {
       code: 0,
       message: "ok".into(),
-      data,
+      data: Some(data),
     }
   }
 
@@ -26,7 +26,7 @@ where
     Self {
       code: err.code(),
       message: err.message(),
-      data: T::default(),
+      data: None,
     }
   }
 }
@@ -34,7 +34,7 @@ where
 // Implement `IntoResponse` for `ApiError`
 impl<T> IntoResponse for ApiResponse<T>
 where
-  T: serde::Serialize + Default,
+  T: serde::Serialize,
 {
   fn into_response(self) -> axum::response::Response {
     (StatusCode::OK, Json(self)).into_response()
