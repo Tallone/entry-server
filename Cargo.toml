@@ -27,9 +27,11 @@ thiserror = "1.0.58"
 time = { version = "0.3.34", features = ["serde-human-readable"] }
 tokio = { version = "1.36.0", features = ["full"] }
 tower = "0.4.13"
-uuid = "1.7.0"
+uuid = { version = "1.7.0", features = ["v4", "serde"] }
 
 axum-macros = "0.4.1"
+tower-http = { version = "0.5.2", features = ["cors"] }
+http-body-util = "0.1.1"
 
 [profile.release]
 codegen-units = 1

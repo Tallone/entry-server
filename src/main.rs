@@ -1,27 +1,38 @@
 use anyhow::Ok;
-use axum::{error_handling::HandleErrorLayer, Router};
+use axum::Router;
 use conf::ApplicationConf;
 use db::DB;
 use dotenvy::dotenv;
-use env_logger::Env;
 use log::info;
+use tower::ServiceBuilder;
+use tower_http::cors::{Any, CorsLayer};
 
 mod conf;
 mod cons;
 mod db;
 mod domain;
 mod error;
+mod logger;
 mod middleware;
+mod tool;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
   dotenv().expect(".env file not found");
-  env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+  logger::init();
   let conf = ApplicationConf::from_yaml(None)?;
   let db = DB::new(&conf).await?;
 
-  let app = Router::new().nest("/api", domain::router());
-  let app = app.fallback(middleware::resp_wrapper::handle_404);
+  let cors = CorsLayer::new().allow_methods(Any).allow_origin(Any);
+
+  let app = Router::new()
+    .fallback(middleware::resp_wrapper::handle_404)
+    .nest("/api", domain::router())
+    .layer(
+      ServiceBuilder::new()
+        .layer(cors)
+        .layer(axum::middleware::from_fn(middleware::request_trace::layer)),
+    );
 
   let listener = tokio::net::TcpListener::bind(&conf.server.addr).await?;
   info!("listening on {}", listener.local_addr().unwrap());

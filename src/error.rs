@@ -12,6 +12,9 @@ pub enum AppError {
   #[error("Api is not found")]
   ApiNotFound,
 
+  #[error("Request content is not valid")]
+  RequestNotValid,
+
   #[error("IO Error: {0}")]
   IO(#[from] io::Error),
 
@@ -26,6 +29,7 @@ impl AppError {
   pub fn code(&self) -> u32 {
     match self {
       AppError::Biz(_) => 4000,
+      AppError::RequestNotValid => 4010,
       AppError::IO(_) => 1500,
       AppError::Db(_) => 1510,
       AppError::Unknown => 9999,
@@ -35,8 +39,8 @@ impl AppError {
 
   pub fn message(&self) -> String {
     match self {
-      AppError::Biz(_) | AppError::Unknown | AppError::ApiNotFound => self.to_string(),
-      _ => cons::MSG_INTERNAL_ERROR.to_string(),
+      AppError::IO(_) | AppError::Db(_) => cons::MSG_INTERNAL_ERROR.to_string(),
+      _ => self.to_string(),
     }
   }
 }
