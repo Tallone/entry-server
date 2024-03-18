@@ -11,11 +11,11 @@ use serde_json::Value;
 use time::Instant;
 use uuid::Uuid;
 
-use crate::{cons, error::AppError, middleware::resp_wrapper::ApiResponse};
+use crate::{cons, error::AppError, middleware::response_wrapper::ApiResponse};
 
 /// This middleware generate a [`HEADER_REQUEST_ID`] to headers,
 /// And will logging request body if the request content type is json.
-pub async fn layer(mut req: Request, next: Next) -> Result<impl IntoResponse, ApiResponse<()>> {
+pub async fn layer(req: Request, next: Next) -> Result<impl IntoResponse, ApiResponse<()>> {
   let start = Instant::now();
   let req_id = Uuid::new_v4().to_string();
   let (mut parts, body) = req.into_parts();
@@ -56,6 +56,6 @@ pub async fn layer(mut req: Request, next: Next) -> Result<impl IntoResponse, Ap
   let request = Request::from_parts(parts, Body::from(body_string));
   let resp = next.run(request).await;
 
-  info!("[{}] done. {}ms", req_id, start.elapsed().whole_milliseconds());
+  info!("[{}] done {}ms", req_id, start.elapsed().whole_milliseconds());
   Ok(resp)
 }

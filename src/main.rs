@@ -1,5 +1,9 @@
+#![warn(unused_imports)]
+
+use std::sync::Arc;
+
 use anyhow::Ok;
-use axum::Router;
+use axum::{extract::Extension, Router};
 use conf::ApplicationConf;
 use db::DB;
 use dotenvy::dotenv;
@@ -14,6 +18,7 @@ mod domain;
 mod error;
 mod logger;
 mod middleware;
+mod state;
 mod tool;
 
 #[tokio::main]
@@ -23,11 +28,14 @@ async fn main() -> anyhow::Result<()> {
   let conf = ApplicationConf::from_yaml(None)?;
   let db = DB::new(&conf).await?;
 
+  let state = state::AppState { db };
+
   let cors = CorsLayer::new().allow_methods(Any).allow_origin(Any);
 
   let app = Router::new()
-    .fallback(middleware::resp_wrapper::handle_404)
     .nest("/api", domain::router())
+    .with_state(state)
+    .fallback(middleware::response_wrapper::handle_404)
     .layer(
       ServiceBuilder::new()
         .layer(cors)

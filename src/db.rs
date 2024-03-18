@@ -2,6 +2,7 @@ use sea_orm::{Database, DatabaseConnection};
 
 use crate::{conf::ApplicationConf, error::AppError};
 
+#[derive(Clone)]
 pub struct DB {
   pub conn: DatabaseConnection,
 }

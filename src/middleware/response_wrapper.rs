@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, response::IntoResponse, BoxError, Json};
+use axum::{http::StatusCode, response::IntoResponse, Json};
 
 use crate::error::AppError;
 
@@ -18,7 +18,7 @@ where
     Self {
       code: 0,
       message: "ok".into(),
-      data: data,
+      data,
     }
   }
 
