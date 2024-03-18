@@ -5,7 +5,6 @@ use db::DB;
 use dotenvy::dotenv;
 use env_logger::Env;
 use log::info;
-use tower::ServiceBuilder;
 
 mod conf;
 mod cons;
@@ -22,6 +21,7 @@ async fn main() -> anyhow::Result<()> {
   let db = DB::new(&conf).await?;
 
   let app = Router::new().nest("/api", domain::router());
+  let app = app.fallback(middleware::resp_wrapper::handle_404);
 
   let listener = tokio::net::TcpListener::bind(&conf.server.addr).await?;
   info!("listening on {}", listener.local_addr().unwrap());

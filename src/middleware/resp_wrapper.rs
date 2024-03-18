@@ -2,7 +2,7 @@ use axum::{http::StatusCode, response::IntoResponse, BoxError, Json};
 
 use crate::error::AppError;
 
-// Standard API response structure
+// API response structure
 #[derive(serde::Serialize)]
 pub struct ApiResponse<T> {
   code: u32,
@@ -46,4 +46,8 @@ impl IntoResponse for AppError {
     let resp: ApiResponse<()> = ApiResponse::failed(self);
     (StatusCode::OK, Json(resp)).into_response()
   }
+}
+
+pub async fn handle_404() -> impl IntoResponse {
+  ApiResponse::<()>::failed(AppError::ApiNotFound)
 }
