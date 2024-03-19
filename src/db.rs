@@ -1,4 +1,6 @@
-use sea_orm::{Database, DatabaseConnection};
+use std::time::Duration;
+
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
 use crate::{conf::ApplicationConf, error::AppError};
 
@@ -9,7 +11,10 @@ pub struct DB {
 
 impl DB {
   pub async fn new(conf: &ApplicationConf) -> Result<Self, AppError> {
-    let conn = Database::connect(&conf.db.url).await?;
+    let mut opt = ConnectOptions::new(&conf.db.url);
+    opt.connect_timeout(Duration::from_secs(1));
+    opt.sqlx_logging(false);
+    let conn = Database::connect(opt).await?;
 
     Ok(Self { conn })
   }

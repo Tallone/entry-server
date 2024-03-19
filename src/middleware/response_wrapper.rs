@@ -1,4 +1,5 @@
 use axum::{http::StatusCode, response::IntoResponse, Json};
+use log::warn;
 
 use crate::error::AppError;
 
@@ -23,6 +24,7 @@ where
   }
 
   pub fn failed(err: AppError) -> Self {
+    warn!("Response with {}", err);
     Self {
       code: err.code(),
       message: err.message(),

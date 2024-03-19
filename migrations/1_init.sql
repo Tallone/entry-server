@@ -1,6 +1,7 @@
 -- Create the Users table
 CREATE TABLE Users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(20),
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     hash TEXT NOT NULL,
