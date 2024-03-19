@@ -1,4 +1,4 @@
-We use `sea-orm-cli` to generate entities, and for the convenience of management, we pull the entities out and put them in a separate directory. 
+We use `sea-orm-cli` to generate entities, and for the convenience of management, we pull the entities out and put them in a separate directory.
 
 Command：
 

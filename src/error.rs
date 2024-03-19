@@ -12,8 +12,11 @@ pub enum AppError {
   #[error("Api is not found")]
   ApiNotFound,
 
-  #[error("Request content is not valid")]
+  #[error("Request is not valid")]
   RequestNotValid,
+
+  #[error("Can't find record")]
+  RecordNotFound,
 
   #[error("IO Error: {0}")]
   IO(#[from] io::Error),
@@ -34,6 +37,7 @@ impl AppError {
       AppError::Db(_) => 1510,
       AppError::Unknown => 9999,
       AppError::ApiNotFound => 404,
+      AppError::RecordNotFound => 4040,
     }
   }
 

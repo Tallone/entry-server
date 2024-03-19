@@ -10,5 +10,5 @@ mod model;
 pub mod service;
 
 pub fn router() -> Router<AppState> {
-  Router::new().route("/", get(api::index)).route("/", post(api::create))
+  Router::new().route("/", post(api::create)).route("/:id", get(api::get))
 }

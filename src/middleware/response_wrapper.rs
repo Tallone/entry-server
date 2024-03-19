@@ -24,7 +24,7 @@ where
   }
 
   pub fn failed(err: AppError) -> Self {
-    warn!("Response with {}", err);
+    warn!("Response failed: {}", err);
     Self {
       code: err.code(),
       message: err.message(),

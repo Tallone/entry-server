@@ -1,19 +1,21 @@
-use axum::{extract::State, Json};
+use anyhow::anyhow;
+use axum::{
+  extract::{Path, State},
+  Json,
+};
 use sea_orm::ActiveValue::*;
+use uuid::Uuid;
 
 use crate::{db::DB, domain::entity::users, error::AppError, middleware::response_wrapper::ApiResponse};
 
-use super::{model::CreateReq, service::Mutation};
+use super::{
+  model::{CreateReq, GetReq},
+  service::{Mutation, Query},
+};
 
 type Result<T> = std::result::Result<ApiResponse<T>, AppError>;
 
-pub async fn index() -> Result<String> {
-  let ret = ApiResponse::ok("User's domain".to_string());
-  Ok(ret)
-}
-
 pub async fn create(State(db): State<DB>, Json(payload): Json<CreateReq>) -> Result<users::Model> {
-  // TODO: Valid request
   let act_model = users::ActiveModel {
     email: Set(payload.email),
     password: Set(payload.password),
@@ -26,5 +28,11 @@ pub async fn create(State(db): State<DB>, Json(payload): Json<CreateReq>) -> Res
   };
 
   let ret = Mutation::create(&db.conn, act_model).await?;
+  Ok(ApiResponse::ok(ret))
+}
+
+pub async fn get(State(db): State<DB>, Path(id): Path<String>) -> Result<users::Model> {
+  let id = Uuid::try_parse(&id).map_err(|_| anyhow!("Id is not valid uuid"))?;
+  let ret = Query::get(&db.conn, GetReq::Id(id)).await?;
   Ok(ApiResponse::ok(ret))
 }
