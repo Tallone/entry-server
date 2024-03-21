@@ -12,10 +12,10 @@ env_logger.workspace = true
 log.workspace = true
 rand.workspace = true
 once_cell.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features = ["full"] }
-serde = { workspace = true, features = ["derive"] }
 
 axum = "0.7.4"
 sea-orm = { version = "0.12.15", features = [
@@ -28,7 +28,7 @@ sea-orm = { version = "0.12.15", features = [
 ] }
 time = { version = "0.3.34", features = ["serde-human-readable"] }
 tower = "0.4.13"
-uuid = { version = "1.7.0", features = ["v4", "serde"] }
+uuid.workspace = true
 
 axum-macros = "0.4.1"
 tower-http = { version = "0.5.2", features = ["cors"] }

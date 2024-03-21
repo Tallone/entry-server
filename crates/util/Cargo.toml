@@ -1,0 +1,11 @@
+[package]
+name = "util"
+version.workspace = true
+edition.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow.workspace = true
+uuid.workspace = true
+reqwest = { version = "0.12.0", features = ["json", "rustls-tls", "socks"] }
