@@ -1,3 +1,4 @@
+pub mod cache;
 pub mod http;
 
 use uuid::Uuid;
