@@ -1,5 +1,5 @@
 [package]
-name = "entry-oauth-client"
+name = "oauth_client"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,4 +11,11 @@ serde.workspace = true
 serde_json.workspace = true
 pingora-memory-cache.workspace = true
 util.workspace = true
+async-trait.workspace = true
 reqwest = { version = "0.12.0", features = ["json", "rustls-tls", "socks"] }
+
+[dev-dependencies]
+log.workspace = true
+env_logger.workspace = true
+tokio.workspace = true
+dotenvy.workspace = true
