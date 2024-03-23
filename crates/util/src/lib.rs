@@ -1,3 +1,4 @@
+pub use fred::prelude::*;
 pub mod cache;
 pub mod http;
 

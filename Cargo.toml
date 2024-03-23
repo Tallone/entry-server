@@ -27,7 +27,6 @@ uuid = { version = "1.7.0", features = ["v4", "serde"] }
 entry_x = { path = "crates/entry_x" }
 util = { path = "crates/util" }
 oauth_client = { path = "crates/oauth_client" }
-fred = "8.0.5"
 
 [profile.release]
 codegen-units = 1

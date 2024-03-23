@@ -1,6 +1,7 @@
 use std::io;
 
 use thiserror::Error;
+use util::RedisError;
 
 use crate::cons;
 
@@ -24,6 +25,9 @@ pub enum AppError {
   #[error("DB Error: {0}")]
   Db(#[from] sea_orm::DbErr),
 
+  #[error("Redis Error: {0}")]
+  Redis(#[from] RedisError),
+
   #[error("Unhandled internal error")]
   Unknown,
 }
@@ -35,6 +39,7 @@ impl AppError {
       AppError::RequestNotValid => 4010,
       AppError::IO(_) => 1500,
       AppError::Db(_) => 1510,
+      AppError::Redis(_) => 1520,
       AppError::Unknown => 9999,
       AppError::ApiNotFound => 404,
       AppError::RecordNotFound => 4040,
@@ -43,7 +48,7 @@ impl AppError {
 
   pub fn message(&self) -> String {
     match self {
-      AppError::IO(_) | AppError::Db(_) => cons::MSG_INTERNAL_ERROR.to_string(),
+      AppError::IO(_) | AppError::Db(_) | AppError::Redis(_) => cons::MSG_INTERNAL_ERROR.to_string(),
       _ => self.to_string(),
     }
   }
