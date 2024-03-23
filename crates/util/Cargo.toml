@@ -8,5 +8,8 @@ edition.workspace = true
 [dependencies]
 anyhow.workspace = true
 uuid.workspace = true
-redis.workspace = true
 reqwest = { version = "0.12.0", features = ["json", "rustls-tls", "socks"] }
+fred.workspace = true
+tokio = { workspace = true, features = ["sync"] }
+async-trait.workspace = true
+serde.workspace = true

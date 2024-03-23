@@ -145,4 +145,10 @@ mod tests {
     let user = o.get_user().await.unwrap();
     info!("User: {:?}", user);
   }
+
+  #[tokio::test]
+  async fn test_redis() {
+    let o = init();
+    let cli = util::cache::redis().await;
+  }
 }
