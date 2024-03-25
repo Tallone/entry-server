@@ -9,9 +9,9 @@ pub enum OAuthProvider {
 }
 
 impl FromStr for OAuthProvider {
-    type Err = Error;
+    type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         todo!()
-    \}
+    }
 }

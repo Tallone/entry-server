@@ -1,15 +1,11 @@
 use sea_orm::{
-  ActiveModelTrait, ColumnDef, ColumnTrait, Condition, DatabaseConnection, EntityTrait, Order, PrimaryKeyToColumn,
-  PrimaryKeyTrait, QueryFilter, QueryOrder, QueryTrait, Value,
+  ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, Order, PrimaryKeyTrait, QueryFilter,
+  QueryOrder, QueryTrait, Select, Value,
 };
 
-use crate::domain::entity::{licenses, users};
+use crate::db::ColumnOrder;
+use crate::domain::entity::licenses;
 use crate::domain::Result;
-
-pub struct OrderByColumn {
-  pub column: licenses::Column,
-  pub order: Order,
-}
 
 pub(crate) struct Mutation;
 pub(crate) struct Query;
@@ -19,17 +15,48 @@ impl Mutation {
     let resp = model.insert(&db).await?;
     Ok(resp)
   }
+
+  pub async fn update<V>(
+    db: DatabaseConnection,
+    column: licenses::Column,
+    value: V,
+    model: licenses::ActiveModel,
+  ) -> Result<licenses::Model>
+  where
+    V: Into<Value>,
+  {
+    let ret = licenses::Entity::update(model)
+      .filter(column.eq(value))
+      .exec(&db)
+      .await?;
+    Ok(ret)
+  }
+
+  // Deletes a record based on the `model`
+  //
+  // Returns true if the deletion was successful, false if no records were deleted.
+  pub async fn delete_one<V>(db: DatabaseConnection, model: licenses::ActiveModel) -> Result<bool> {
+    let ret = licenses::Entity::delete(model).exec(&db).await?;
+    Ok(ret.rows_affected > 0)
+  }
 }
 
 impl Query {
+  // Convenient way to get `Select`
+  fn get_select() -> Select<licenses::Entity> {
+    licenses::Entity::find()
+  }
+
+  // Retrieves a record from the database based on a specified column and value.
   pub async fn get<V>(db: DatabaseConnection, column: licenses::Column, v: V) -> Result<Option<licenses::Model>>
   where
     V: Into<Value>,
   {
-    let resp = licenses::Entity::find().filter(column.eq(v)).one(&db).await?;
+    let resp = Query::get_select().filter(column.eq(v)).one(&db).await?;
     Ok(resp)
   }
 
+  // Retrieves a record from the database by id.
   pub async fn get_by_id<T>(db: DatabaseConnection, id: T) -> Result<Option<licenses::Model>>
   where
     T: Into<<licenses::PrimaryKey as PrimaryKeyTrait>::ValueType>,
@@ -37,11 +64,13 @@ impl Query {
     Query::get(db, licenses::Column::Id, id.into()).await
   }
 
+  // Retrieves a list of records from the database
+  // based on `column` and `values`.
   pub async fn list_in<V>(
     db: DatabaseConnection,
     column: licenses::Column,
     values: Vec<V>,
-    order: Option<OrderByColumn>,
+    order: Option<ColumnOrder<licenses::Column>>,
   ) -> Result<Vec<licenses::Model>>
   where
     V: Into<Value>,
@@ -56,6 +85,7 @@ impl Query {
     Ok(resp)
   }
 
+  // Retrieves a list of records for `ids`
   pub async fn list_by_ids<T>(db: DatabaseConnection, ids: Vec<T>) -> Result<Vec<licenses::Model>>
   where
     T: Into<<licenses::PrimaryKey as PrimaryKeyTrait>::ValueType>,
@@ -74,7 +104,10 @@ mod tests {
   use time::{Duration, OffsetDateTime};
   use uuid::Uuid;
 
-  use crate::{conf::ApplicationConf, db::DB};
+  use crate::{
+    conf::ApplicationConf,
+    db::{ColumnOrder, DB},
+  };
 
   async fn init() -> DB {
     dotenv().expect(".env file not found");
@@ -116,7 +149,7 @@ mod tests {
       db.conn,
       licenses::Column::Key,
       keys,
-      Some(OrderByColumn {
+      Some(ColumnOrder {
         column: licenses::Column::CreatedAt,
         order: Order::Asc,
       }),
