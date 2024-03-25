@@ -1,12 +1,14 @@
 use std::time::Duration;
 
 use anyhow::anyhow;
-use log::info;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use util::{cache::redis, KeysInterface};
 use uuid::Uuid;
 
-use crate::{domain::entity::users, error::AppError};
+use crate::{
+  domain::{entity::users, Result},
+  error::AppError,
+};
 
 use super::model::GetReq;
 
@@ -14,8 +16,6 @@ const DEFAULT_CACHE_DURATION: Duration = Duration::from_secs(2 * 30 * 60);
 
 pub(crate) struct Mutation;
 pub(crate) struct Query;
-
-type Result<T> = std::result::Result<T, AppError>;
 
 impl Mutation {
   pub async fn create(db: &DatabaseConnection, model: users::ActiveModel) -> Result<users::Model> {
