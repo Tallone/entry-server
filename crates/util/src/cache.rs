@@ -1,14 +1,17 @@
-use std::env;
+use std::{env, future::Future, time::Duration};
 
+use anyhow::anyhow;
 use fred::{
   clients::RedisPool,
-  interfaces::ClientLike,
-  types::{ReconnectPolicy, RedisConfig},
+  error::RedisError,
+  interfaces::{ClientLike, KeysInterface},
+  types::{Expiration, FromRedis, ReconnectPolicy, RedisConfig, RedisValue},
 };
 use tokio::sync::OnceCell;
 
 const ENV_REDIS_URL: &str = "ENTRY_CACHE_REDIS_URL";
 const POOL_SIZE: usize = 4;
+const DEFAULT_EXPIRE_DURATION: Duration = Duration::from_secs(2 * 60 * 60);
 static INSTANCE: OnceCell<RedisPool> = OnceCell::const_new();
 
 /// Get an `RedisClient`

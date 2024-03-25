@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/entry_x", "crates/oauth_client", "crates/util"]
+members = [ "crates/core","crates/entry_x", "crates/oauth_client", "crates/util"]
 default-members = ["crates/entry_x"]
 [workspace.package]
 name = "entry-server"
@@ -22,8 +22,10 @@ thiserror = "1.0.58"
 tokio = "1.36.0"
 once_cell = "1.19.0"
 pingora-memory-cache = "0.1.0"
+sea-orm = "0.12.15"
 uuid = { version = "1.7.0", features = ["v4", "serde"] }
 
+core = {path = "crates/core"}
 entry_x = { path = "crates/entry_x" }
 util = { path = "crates/util" }
 oauth_client = { path = "crates/oauth_client" }

@@ -3,7 +3,7 @@ use std::io;
 use thiserror::Error;
 use util::RedisError;
 
-use crate::cons;
+pub const MSG_INTERNAL_ERROR: &str = "Internal error";
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -48,7 +48,7 @@ impl AppError {
 
   pub fn message(&self) -> String {
     match self {
-      AppError::IO(_) | AppError::Db(_) | AppError::Redis(_) => cons::MSG_INTERNAL_ERROR.to_string(),
+      AppError::IO(_) | AppError::Db(_) | AppError::Redis(_) => MSG_INTERNAL_ERROR.to_string(),
       _ => self.to_string(),
     }
   }
