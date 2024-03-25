@@ -36,5 +36,3 @@ pub async fn get(State(db): State<DB>, Path(id): Path<String>) -> Result<users::
   let ret = Query::get(&db.conn, GetReq::Id(id)).await?;
   Ok(ApiResponse::ok(ret))
 }
-
-pub async fn oauth_url()

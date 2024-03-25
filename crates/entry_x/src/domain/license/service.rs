@@ -1,106 +1,14 @@
-use sea_orm::{
-  ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, Order, PrimaryKeyTrait, QueryFilter,
-  QueryOrder, QueryTrait, Select, Value,
-};
+use crate::{domain::entity::licenses, gen_crud};
 
-use crate::db::ColumnOrder;
-use crate::domain::entity::licenses;
-use crate::domain::Result;
 
-pub(crate) struct Mutation;
-pub(crate) struct Query;
-
-impl Mutation {
-  pub async fn create(db: DatabaseConnection, model: licenses::ActiveModel) -> Result<licenses::Model> {
-    let resp = model.insert(&db).await?;
-    Ok(resp)
-  }
-
-  pub async fn update<V>(
-    db: DatabaseConnection,
-    column: licenses::Column,
-    value: V,
-    model: licenses::ActiveModel,
-  ) -> Result<licenses::Model>
-  where
-    V: Into<Value>,
-  {
-    let ret = licenses::Entity::update(model)
-      .filter(column.eq(value))
-      .exec(&db)
-      .await?;
-    Ok(ret)
-  }
-
-  // Deletes a record based on the `model`
-  //
-  // Returns true if the deletion was successful, false if no records were deleted.
-  pub async fn delete_one<V>(db: DatabaseConnection, model: licenses::ActiveModel) -> Result<bool> {
-    let ret = licenses::Entity::delete(model).exec(&db).await?;
-    Ok(ret.rows_affected > 0)
-  }
-}
-
-impl Query {
-  // Convenient way to get `Select`
-  fn get_select() -> Select<licenses::Entity> {
-    licenses::Entity::find()
-  }
-
-  // Retrieves a record from the database based on a specified column and value.
-  pub async fn get<V>(db: DatabaseConnection, column: licenses::Column, v: V) -> Result<Option<licenses::Model>>
-  where
-    V: Into<Value>,
-  {
-    let resp = Query::get_select().filter(column.eq(v)).one(&db).await?;
-    Ok(resp)
-  }
-
-  // Retrieves a record from the database by id.
-  pub async fn get_by_id<T>(db: DatabaseConnection, id: T) -> Result<Option<licenses::Model>>
-  where
-    T: Into<<licenses::PrimaryKey as PrimaryKeyTrait>::ValueType>,
-  {
-    Query::get(db, licenses::Column::Id, id.into()).await
-  }
-
-  // Retrieves a list of records from the database
-  // based on `column` and `values`.
-  pub async fn list_in<V>(
-    db: DatabaseConnection,
-    column: licenses::Column,
-    values: Vec<V>,
-    order: Option<ColumnOrder<licenses::Column>>,
-  ) -> Result<Vec<licenses::Model>>
-  where
-    V: Into<Value>,
-  {
-    let mut filters = Condition::all();
-    filters = filters.add(column.is_in(values));
-    let resp = licenses::Entity::find()
-      .filter(filters)
-      .apply_if(order, |q, v| q.order_by(v.column, v.order))
-      .all(&db)
-      .await?;
-    Ok(resp)
-  }
-
-  // Retrieves a list of records for `ids`
-  pub async fn list_by_ids<T>(db: DatabaseConnection, ids: Vec<T>) -> Result<Vec<licenses::Model>>
-  where
-    T: Into<<licenses::PrimaryKey as PrimaryKeyTrait>::ValueType>,
-  {
-    let ids: Vec<<licenses::PrimaryKey as PrimaryKeyTrait>::ValueType> = ids.into_iter().map(Into::into).collect();
-    Query::list_in(db, licenses::Column::Id, ids, None).await
-  }
-}
+gen_crud!(licenses);
 
 #[cfg(test)]
 mod tests {
   use super::*;
   use dotenvy::dotenv;
   use log::info;
-  use sea_orm::Set;
+  use sea_orm::{Order, Set};
   use time::{Duration, OffsetDateTime};
   use uuid::Uuid;
 
@@ -112,7 +20,7 @@ mod tests {
   async fn init() -> DB {
     dotenv().expect(".env file not found");
     let _ = env_logger::builder()
-      .filter_level(log::LevelFilter::Info)
+      .filter_level(log::LevelFilter::Debug)
       .is_test(true)
       .try_init();
 
@@ -121,12 +29,12 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create() {
+  async fn test_crud() {
     let db = init().await;
     let key = Uuid::new_v4().to_string();
     let until = OffsetDateTime::now_utc().checked_add(Duration::days(365)).unwrap();
-    Mutation::create(
-      db.conn,
+    let v = Mutation::create(
+      db.conn.clone(),
       licenses::ActiveModel {
         key: Set(key),
         status: Set(0),
@@ -136,6 +44,18 @@ mod tests {
     )
     .await
     .unwrap();
+  assert!(v.id > 0);
+  let id = v.id.clone();
+  let v = Query::get(db.conn.clone(), licenses::Column::Key, v.key).await.unwrap();
+  assert!(v.is_some());
+  let v = Query::get_by_id(db.conn.clone(), id).await.unwrap();
+  assert!(v.is_some());
+  assert_eq!(v.unwrap().id, id);
+  let v = Mutation::update(db.conn.clone(), licenses::ActiveModel{id: Set(id), status:Set(1), ..Default::default()}).await.unwrap();
+  assert_eq!(v.status, 1);
+  let r = Mutation::delete_one(db.conn.clone(), licenses::ActiveModel { id: Set(id), ..Default::default()}).await.unwrap();
+  assert!(r);
+
   }
 
   #[tokio::test]

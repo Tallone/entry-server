@@ -1,6 +1,5 @@
-use std::time::Duration;
-
 use sea_orm::{ColumnTrait, ConnectOptions, Database, DatabaseConnection, Order};
+use std::time::Duration;
 
 use crate::{conf::ApplicationConf, error::AppError};
 
@@ -25,8 +24,12 @@ impl DB {
   }
 }
 
-macro_rules! crud_operations {
+#[macro_export]
+macro_rules! gen_crud {
   ($entity:ident) => {
+    use crate::db::ColumnOrder;
+    use sea_orm::prelude::*;
+    use sea_orm::{QueryOrder, QueryTrait};
     pub(crate) struct Mutation;
     pub(crate) struct Query;
 
@@ -39,23 +42,21 @@ macro_rules! crud_operations {
         Ok(resp)
       }
 
-      pub async fn update<V>(
+      pub async fn update(
         db: sea_orm::DatabaseConnection,
-        column: $entity::Column,
-        value: V,
         model: $entity::ActiveModel,
       ) -> Result<$entity::Model, sea_orm::DbErr>
-      where
-        V: Into<sea_orm::Value>,
       {
         let ret = $entity::Entity::update(model)
-          .filter(column.eq(value))
           .exec(&db)
           .await?;
         Ok(ret)
       }
 
-      pub async fn delete_one<V>(
+      // Deletes a record based on the `model`
+      //
+      // Returns true if the deletion was successful, false if no records were deleted.
+      pub async fn delete_one(
         db: sea_orm::DatabaseConnection,
         model: $entity::ActiveModel,
       ) -> Result<bool, sea_orm::DbErr> {
@@ -65,10 +66,12 @@ macro_rules! crud_operations {
     }
 
     impl Query {
+      // Convenient way to get `Select`
       fn get_select() -> sea_orm::Select<$entity::Entity> {
         $entity::Entity::find()
       }
 
+      // Retrieves a record from the database based on a specified column and value.
       pub async fn get<V>(
         db: sea_orm::DatabaseConnection,
         column: $entity::Column,
@@ -81,6 +84,7 @@ macro_rules! crud_operations {
         Ok(resp)
       }
 
+      // Retrieves a record from the database by id.
       pub async fn get_by_id<T>(
         db: sea_orm::DatabaseConnection,
         id: T,
@@ -91,11 +95,13 @@ macro_rules! crud_operations {
         Self::get(db, $entity::Column::Id, id.into()).await
       }
 
+      // Retrieves a list of records from the database
+      // based on `column` and `values`.
       pub async fn list_in<V>(
         db: sea_orm::DatabaseConnection,
         column: $entity::Column,
         values: Vec<V>,
-        order: Option<sea_orm::ColumnOrder<$entity::Column>>,
+        order: Option<ColumnOrder<$entity::Column>>,
       ) -> Result<Vec<$entity::Model>, sea_orm::DbErr>
       where
         V: Into<sea_orm::Value>,
@@ -110,6 +116,7 @@ macro_rules! crud_operations {
         Ok(resp)
       }
 
+      // Retrieves a list of records for `ids`
       pub async fn list_by_ids<T>(
         db: sea_orm::DatabaseConnection,
         ids: Vec<T>,
@@ -124,6 +131,3 @@ macro_rules! crud_operations {
     }
   };
 }
-
-// Usage:
-// crud_operations!(my_license_module);

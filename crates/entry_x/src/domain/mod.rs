@@ -1,6 +1,7 @@
 use axum::Router;
 
 use crate::{error::AppError, state::AppState};
+pub mod activation;
 pub(crate) mod entity;
 pub mod license;
 pub(crate) mod user;
