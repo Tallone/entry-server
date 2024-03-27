@@ -28,3 +28,9 @@ pub(crate) enum GetReq {
   Id(Uuid),
   Email(String),
 }
+
+#[derive(Deserialize)]
+pub(crate) struct OAuthLoginReq {
+  pub state: String,
+  pub code: String,
+}

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use anyhow::anyhow;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
-use util::{cache::redis, KeysInterface};
+use util::{cache::redis, Expiration, KeysInterface};
 use uuid::Uuid;
 
 use crate::{
@@ -25,20 +25,20 @@ impl Mutation {
 }
 
 impl Query {
-  pub async fn get(db: &DatabaseConnection, opt: GetReq) -> Result<users::Model> {
+  pub async fn get(db: DatabaseConnection, opt: GetReq) -> Result<Option<users::Model>> {
     let query = users::Entity::find();
     let query = match opt {
       GetReq::Id(id) => query.filter(users::Column::Id.eq(id)),
       GetReq::Email(v) => query.filter(users::Column::Email.eq(v)),
     };
-    let resp = query.one(db).await?;
-    resp.ok_or(AppError::RecordNotFound)
+    let resp = query.one(&db).await?;
+    Ok(resp)
   }
 }
 
-const TOKEN_CACHE_PREFIX: &str = "TOKEN_";
-pub async fn get_user(token: &str, id: &str, db: &DatabaseConnection) -> Result<Option<users::Model>> {
-  let key = format!("{}{}", TOKEN_CACHE_PREFIX, token);
+const USER_CACHE_PREFIX: &str = "USER_";
+pub async fn get_user(id: &str, db: DatabaseConnection) -> Result<Option<users::Model>> {
+  let key = format!("{}{}", USER_CACHE_PREFIX, id);
   let redis = util::cache::redis().await;
   let count: usize = redis.exists(&key).await?;
   if count > 0 {
@@ -48,13 +48,13 @@ pub async fn get_user(token: &str, id: &str, db: &DatabaseConnection) -> Result<
   }
 
   let uid = Uuid::parse_str(id).map_err(|_| anyhow!("Not a valid uuid: {}", id))?;
-  if let Some(u) = users::Entity::find_by_id(uid).one(db).await? {
+  if let Some(u) = users::Entity::find_by_id(uid).one(&db).await? {
     let data = serde_json::to_string(&u).unwrap();
     redis
       .set(
         &key,
         &data,
-        Some(util::Expiration::EX(DEFAULT_CACHE_DURATION.as_secs() as i64)),
+        Some(Expiration::EX(DEFAULT_CACHE_DURATION.as_secs() as i64)),
         None,
         false,
       )
@@ -63,6 +63,32 @@ pub async fn get_user(token: &str, id: &str, db: &DatabaseConnection) -> Result<
     return Ok(Some(u));
   }
   Ok(None)
+}
+
+const TOKEN_CACHE_PREFIX: &str = "TOKEN_";
+pub async fn create_token(token: &str, id: &str) -> Result<()> {
+  let key = format!("{}{}", TOKEN_CACHE_PREFIX, token);
+  let redis = util::cache::redis().await;
+  redis
+    .set(
+      &key,
+      id,
+      Some(Expiration::EX(DEFAULT_CACHE_DURATION.as_secs() as i64)),
+      None,
+      false,
+    )
+    .await?;
+  Ok(())
+}
+
+pub async fn get_user_by_token(token: &str, db: DatabaseConnection) -> Result<Option<users::Model>> {
+  let key = format!("{}{}", TOKEN_CACHE_PREFIX, token);
+  let redis = util::cache::redis().await;
+  let uid: Option<String> = redis.get(&key).await?;
+  match uid {
+    Some(v) => return get_user(&v, db).await,
+    None => return Ok(None),
+  }
 }
 
 #[cfg(test)]
