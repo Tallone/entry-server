@@ -36,7 +36,10 @@ pub(crate) async fn oauth_login(
   let access_token = strategy.get_access_token(payload.code, payload.state).await?;
   let auth_user = strategy.get_user(&access_token).await?;
   match Query::get(db.conn, GetReq::Email(auth_user.email)).await? {
-    Some(u) => service::get_user(token, id, db),
+    Some(u) => {
+      // Login success, create token
+      service::create_token(token, id)
+    }
     None => {}
   }
 
