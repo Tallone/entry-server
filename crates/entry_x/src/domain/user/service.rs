@@ -36,11 +36,13 @@ impl Query {
   }
 }
 
-pub async fn get_user(cache_key: &str, id: &str, db: &DatabaseConnection) -> Result<Option<users::Model>> {
+const TOKEN_CACHE_PREFIX: &str = "TOKEN_";
+pub async fn get_user(token: &str, id: &str, db: &DatabaseConnection) -> Result<Option<users::Model>> {
+  let key = format!("{}{}", TOKEN_CACHE_PREFIX, token);
   let redis = util::cache::redis().await;
-  let count: usize = redis.exists(cache_key).await?;
+  let count: usize = redis.exists(&key).await?;
   if count > 0 {
-    let json: String = redis.get(cache_key).await?;
+    let json: String = redis.get(&key).await?;
     let u: users::Model = serde_json::from_str(&json).map_err(|_| anyhow!("Got an invlid user json from redis"))?;
     return Ok(Some(u));
   }
@@ -50,7 +52,7 @@ pub async fn get_user(cache_key: &str, id: &str, db: &DatabaseConnection) -> Res
     let data = serde_json::to_string(&u).unwrap();
     redis
       .set(
-        cache_key,
+        &key,
         &data,
         Some(util::Expiration::EX(DEFAULT_CACHE_DURATION.as_secs() as i64)),
         None,

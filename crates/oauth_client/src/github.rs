@@ -1,55 +1,70 @@
-use std::{env, time::Duration};
+use std::{cell::OnceCell, env, sync::OnceLock, time::Duration};
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use pingora_memory_cache::MemoryCache;
+use log::error;
 use reqwest::{
   header::{ACCEPT, USER_AGENT},
   Url,
 };
 use serde_json::Value;
+use util::KeysInterface;
 
-use crate::{consts, AuthUser, GetAccessTokenRequest, OAuthStrategy, Result, DEFAULT_USER_AGENT};
+use crate::{
+  consts::{self, OAuthError},
+  AuthUser, GetAccessTokenRequest, OAuthStrategy, Result, DEFAULT_USER_AGENT,
+};
 
 const OAUTH_HOST: &str = "https://github.com";
 const API_HOST: &str = "https://api.github.com";
+static INSTANCE: OnceLock<GithubOAuthStrategy> = OnceLock::new();
 
 pub struct GithubOAuthStrategy {
   client_id: String,
   client_secret: String,
   redirect_url: String,
-  // TODO: Using redis to check state
-  cache: MemoryCache<String, ()>,
-  token: Option<String>,
 }
 
 impl GithubOAuthStrategy {
-  pub fn new() -> anyhow::Result<Self> {
-    let client_id = env::var(consts::ENV_GITHUB_CLIENT_ID)
-      .with_context(|| format!("Missing environment {}", consts::ENV_GITHUB_CLIENT_ID))?;
-    let client_secret = env::var(consts::ENV_GITHUB_CLIENT_SECRET)
-      .with_context(|| format!("Missing environment {}", consts::ENV_GITHUB_CLIENT_SECRET))?;
-    let redirect_url = env::var(consts::ENV_REDIRECT_URL)
-      .with_context(|| format!("Missing environment {}", consts::ENV_REDIRECT_URL))?;
+  pub fn new() -> &'static Self {
+    INSTANCE.get_or_init(|| {
+      let client_id = env::var(consts::ENV_GITHUB_CLIENT_ID)
+        .expect(format!("Missing environment {}", consts::ENV_GITHUB_CLIENT_ID).as_str());
+      let client_secret = env::var(consts::ENV_GITHUB_CLIENT_SECRET)
+        .expect(format!("Missing environment {}", consts::ENV_GITHUB_CLIENT_SECRET).as_str());
+      let redirect_url =
+        env::var(consts::ENV_REDIRECT_URL).expect(format!("Missing environment {}", consts::ENV_REDIRECT_URL).as_str());
 
-    Ok(Self {
-      client_id,
-      client_secret,
-      redirect_url,
-      cache: MemoryCache::new(100),
-      token: Default::default(),
+      Self {
+        client_id,
+        client_secret,
+        redirect_url,
+      }
     })
   }
 }
 
 #[async_trait]
 impl OAuthStrategy for GithubOAuthStrategy {
-  fn get_auth_url(&self) -> Result<Url> {
+  async fn get_auth_url(&self) -> Result<Url> {
     let api = format!("{}{}", OAUTH_HOST, "/login/oauth/authorize");
     let mut url: Url = Url::parse(&api).unwrap();
 
     let state = util::rand_uuid();
-    self.cache.put(&state, (), Some(Duration::from_secs(30 * 60)));
+    let cache = util::cache::redis().await;
+    cache
+      .set(
+        self.get_state_cache_key(state.as_str()),
+        state.as_str(),
+        Some(util::Expiration::EX(30 * 60)),
+        None,
+        false,
+      )
+      .await
+      .map_err(|e| {
+        error!("Set cache failed: {}", e);
+        OAuthError::InvalidState
+      })?;
 
     url
       .query_pairs_mut()
@@ -61,10 +76,20 @@ impl OAuthStrategy for GithubOAuthStrategy {
     Ok(url)
   }
 
-  async fn get_access_token(&mut self, code: String, state: String) -> Result<String> {
-    if self.cache.get(&state).0.is_none() {
-      return Err(anyhow!("Invalid state: {state}"));
-    }
+  async fn get_access_token(&self, code: String, state: String) -> Result<String> {
+    // Check state is in cache,
+    util::cache::redis()
+      .await
+      .exists(self.get_state_cache_key(&state))
+      .await
+      .map_or(Err(OAuthError::InvalidState), |count: i32| {
+        if count == 0 {
+          Err(OAuthError::InvalidState)
+        } else {
+          Ok(())
+        }
+      })?;
+
     let api = format!("{}{}", OAUTH_HOST, "/login/oauth/access_token");
     let body = GetAccessTokenRequest {
       client_id: &self.client_id,
@@ -83,17 +108,19 @@ impl OAuthStrategy for GithubOAuthStrategy {
       .await?;
 
     if let Some(ac) = response.get("access_token") {
-      self.token = ac.as_str().map(|s| s.to_owned());
-      return self.token.clone().ok_or(anyhow!(
+      let ac = ac.as_str().ok_or(anyhow!(
         "Extract access_token failed, maybe Github change the field name"
-      ));
+      ))?;
+      return Ok(ac.to_owned());
     }
 
-    Err(anyhow!("Github not response access_token: {}", response.to_string()))
+    Err(OAuthError::Other(anyhow!(
+      "Github not response access_token: {}",
+      response.to_string()
+    )))
   }
 
-  async fn get_user(&self) -> Result<AuthUser> {
-    let token = self.token.as_ref().ok_or(anyhow!("No access_token"))?;
+  async fn get_user(&self, token: &str) -> Result<AuthUser> {
     let api = format!("{}{}", API_HOST, "/user");
     let client = util::http::client();
     let response: AuthUser = client
@@ -119,19 +146,19 @@ mod tests {
 
   use super::GithubOAuthStrategy;
 
-  fn init() -> GithubOAuthStrategy {
+  fn init() -> &'static GithubOAuthStrategy {
     let _ = env_logger::builder()
       .filter_level(log::LevelFilter::Info)
       .is_test(true)
       .try_init();
     dotenv().unwrap();
-    GithubOAuthStrategy::new().unwrap()
+    GithubOAuthStrategy::new()
   }
 
-  #[test]
-  fn test_auth_url() {
+  #[tokio::test]
+  async fn test_auth_url() {
     let o = init();
-    let auth_url = o.get_auth_url().unwrap();
+    let auth_url = o.get_auth_url().await.unwrap();
     info!("auth url: {}", auth_url);
   }
 
@@ -142,7 +169,7 @@ mod tests {
     let mut o = init();
     let token = o.get_access_token(code.to_owned(), state.to_owned()).await.unwrap();
     info!("token: {token}");
-    let user = o.get_user().await.unwrap();
+    let user = o.get_user(&token).await.unwrap();
     info!("User: {:?}", user);
   }
 

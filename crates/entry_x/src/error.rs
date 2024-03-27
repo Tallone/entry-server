@@ -1,5 +1,6 @@
 use std::io;
 
+use oauth_client::consts::OAuthError;
 use thiserror::Error;
 use util::RedisError;
 
@@ -13,12 +14,6 @@ pub enum AppError {
   #[error("Api is not found")]
   ApiNotFound,
 
-  #[error("Request is not valid")]
-  RequestNotValid,
-
-  #[error("Can't find record")]
-  RecordNotFound,
-
   #[error("IO Error: {0}")]
   IO(#[from] io::Error),
 
@@ -30,6 +25,18 @@ pub enum AppError {
 
   #[error("Unhandled internal error")]
   Unknown,
+
+  #[error("Request is not valid")]
+  RequestNotValid,
+
+  #[error("Can't find record")]
+  RecordNotFound,
+
+  #[error("This api need login first")]
+  LoginRequired,
+
+  #[error(transparent)]
+  OAuth(#[from] OAuthError),
 }
 
 impl AppError {
@@ -37,12 +44,14 @@ impl AppError {
     match self {
       AppError::Biz(_) => 4000,
       AppError::RequestNotValid => 4010,
+      AppError::OAuth(_) => 4011,
       AppError::IO(_) => 1500,
       AppError::Db(_) => 1510,
       AppError::Redis(_) => 1520,
       AppError::Unknown => 9999,
       AppError::ApiNotFound => 404,
       AppError::RecordNotFound => 4040,
+      AppError::LoginRequired => 403,
     }
   }
 
