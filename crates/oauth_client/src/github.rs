@@ -115,8 +115,7 @@ impl OAuthStrategy for GithubOAuthStrategy {
     }
 
     Err(OAuthError::Other(anyhow!(
-      "Github not response access_token: {}",
-      response.to_string()
+      "Maybe the code passed is incorrect or expired.",
     )))
   }
 

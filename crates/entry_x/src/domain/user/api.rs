@@ -1,11 +1,5 @@
-use anyhow::anyhow;
-use axum::{
-  extract::{Path, State},
-  Json,
-};
-use axum_macros::debug_handler;
+use axum::{extract::State, Json};
 use sea_orm::ActiveValue::*;
-use uuid::Uuid;
 
 use crate::{
   db::DB,
@@ -14,18 +8,15 @@ use crate::{
   middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
 };
 
-use super::{
-  model::{CreateReq, GetReq},
-  service::{Mutation, Query},
-};
+use super::{model::CreateReq, service::Mutation};
 
 type Result<T> = std::result::Result<ApiResponse<T>, AppError>;
 
 pub async fn create(State(db): State<DB>, Json(payload): Json<CreateReq>) -> Result<users::Model> {
   let act_model = users::ActiveModel {
     email: Set(payload.email),
-    password: Set(payload.password),
-    hash: Set(payload.hash),
+    password: Set(Some(payload.password)),
+    hash: Set(Some(payload.hash)),
     name: match payload.name {
       Some(v) => Set(Some(v)),
       None => NotSet,

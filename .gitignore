@@ -5,3 +5,5 @@ Cargo.lock
 *.pdb
 /target
 .env
+.cargo
+.vscode

@@ -29,10 +29,10 @@ where
       let token = token.to_str().map_err(|_| AppError::RequestNotValid)?;
       let u = user::service::get_user_by_token(token, &db.conn)
         .await?
-        .ok_or(AppError::LoginRequired)?;
+        .ok_or(AppError::InvalidToken)?;
       return Ok(LoginedUser(u));
     }
 
-    Err(AppError::LoginRequired)
+    Err(AppError::InvalidToken)
   }
 }

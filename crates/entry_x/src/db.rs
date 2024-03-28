@@ -16,7 +16,7 @@ pub struct DB {
 impl DB {
   pub async fn new(conf: &ApplicationConf) -> Result<Self, AppError> {
     let mut opt = ConnectOptions::new(&conf.db.url);
-    opt.connect_timeout(Duration::from_secs(1));
+    opt.connect_timeout(Duration::from_secs(3));
     opt.sqlx_logging(false);
     let conn = Database::connect(opt).await?;
 
@@ -45,11 +45,8 @@ macro_rules! gen_crud {
       pub async fn update(
         db: sea_orm::DatabaseConnection,
         model: $entity::ActiveModel,
-      ) -> Result<$entity::Model, sea_orm::DbErr>
-      {
-        let ret = $entity::Entity::update(model)
-          .exec(&db)
-          .await?;
+      ) -> Result<$entity::Model, sea_orm::DbErr> {
+        let ret = $entity::Entity::update(model).exec(&db).await?;
         Ok(ret)
       }
 

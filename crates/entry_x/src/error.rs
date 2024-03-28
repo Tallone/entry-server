@@ -32,8 +32,8 @@ pub enum AppError {
   #[error("Can't find record")]
   RecordNotFound,
 
-  #[error("This api need login first")]
-  LoginRequired,
+  #[error("The provided client token is invalid or expired. Please check your credentials and try again.")]
+  InvalidToken,
 
   #[error(transparent)]
   OAuth(#[from] OAuthError),
@@ -51,7 +51,7 @@ impl AppError {
       AppError::Unknown => 9999,
       AppError::ApiNotFound => 404,
       AppError::RecordNotFound => 4040,
-      AppError::LoginRequired => 403,
+      AppError::InvalidToken => 403,
     }
   }
 

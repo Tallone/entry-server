@@ -1,5 +1,5 @@
 use axum::{http::StatusCode, response::IntoResponse, Json};
-use log::warn;
+use log::{info, warn};
 
 use crate::error::AppError;
 
@@ -46,6 +46,7 @@ where
 impl IntoResponse for AppError {
   fn into_response(self) -> axum::response::Response {
     let resp: ApiResponse<()> = ApiResponse::failed(self);
+    info!("resp: {}", serde_json::to_string_pretty(&resp).unwrap());
     (StatusCode::OK, Json(resp)).into_response()
   }
 }
