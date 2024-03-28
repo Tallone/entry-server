@@ -1,11 +1,9 @@
-use std::{env, future::Future, time::Duration};
+use std::{env, time::Duration};
 
-use anyhow::anyhow;
 use fred::{
   clients::RedisPool,
-  error::RedisError,
-  interfaces::{ClientLike, KeysInterface},
-  types::{Expiration, FromRedis, ReconnectPolicy, RedisConfig, RedisValue},
+  interfaces::ClientLike,
+  types::{ReconnectPolicy, RedisConfig},
 };
 use tokio::sync::OnceCell;
 

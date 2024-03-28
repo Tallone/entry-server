@@ -3,10 +3,16 @@ use axum::{
   extract::{Path, State},
   Json,
 };
+use axum_macros::debug_handler;
 use sea_orm::ActiveValue::*;
 use uuid::Uuid;
 
-use crate::{db::DB, domain::entity::users, error::AppError, middleware::response_wrapper::ApiResponse};
+use crate::{
+  db::DB,
+  domain::entity::users,
+  error::AppError,
+  middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
+};
 
 use super::{
   model::{CreateReq, GetReq},
@@ -31,8 +37,7 @@ pub async fn create(State(db): State<DB>, Json(payload): Json<CreateReq>) -> Res
   Ok(ApiResponse::ok(ret))
 }
 
-pub async fn get(State(db): State<DB>, Path(id): Path<String>) -> Result<users::Model> {
-  let id = Uuid::try_parse(&id).map_err(|_| anyhow!("Id is not valid uuid"))?;
-  let ret = Query::get(&db.conn, GetReq::Id(id)).await?;
-  Ok(ApiResponse::ok(ret))
+/// Get current login user info
+pub async fn current(user: LoginedUser) -> Result<users::Model> {
+  Ok(ApiResponse::ok(user.0))
 }

@@ -2,13 +2,10 @@ use std::time::Duration;
 
 use anyhow::anyhow;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
-use util::{cache::redis, Expiration, KeysInterface};
+use util::{Expiration, KeysInterface};
 use uuid::Uuid;
 
-use crate::{
-  domain::{entity::users, Result},
-  error::AppError,
-};
+use crate::domain::{entity::users, Result};
 
 use super::model::GetReq;
 
@@ -18,26 +15,26 @@ pub(crate) struct Mutation;
 pub(crate) struct Query;
 
 impl Mutation {
-  pub async fn create(db: &DatabaseConnection, model: users::ActiveModel) -> Result<users::Model> {
-    let ret = model.insert(db).await?;
+  pub async fn create(conn: &DatabaseConnection, model: users::ActiveModel) -> Result<users::Model> {
+    let ret = model.insert(conn).await?;
     Ok(ret)
   }
 }
 
 impl Query {
-  pub async fn get(db: DatabaseConnection, opt: GetReq) -> Result<Option<users::Model>> {
+  pub async fn get(conn: &DatabaseConnection, opt: GetReq) -> Result<Option<users::Model>> {
     let query = users::Entity::find();
     let query = match opt {
       GetReq::Id(id) => query.filter(users::Column::Id.eq(id)),
       GetReq::Email(v) => query.filter(users::Column::Email.eq(v)),
     };
-    let resp = query.one(&db).await?;
+    let resp = query.one(conn).await?;
     Ok(resp)
   }
 }
 
 const USER_CACHE_PREFIX: &str = "USER_";
-pub async fn get_user(id: &str, db: DatabaseConnection) -> Result<Option<users::Model>> {
+pub async fn get_user(id: &str, conn: &DatabaseConnection) -> Result<Option<users::Model>> {
   let key = format!("{}{}", USER_CACHE_PREFIX, id);
   let redis = util::cache::redis().await;
   let count: usize = redis.exists(&key).await?;
@@ -48,7 +45,7 @@ pub async fn get_user(id: &str, db: DatabaseConnection) -> Result<Option<users::
   }
 
   let uid = Uuid::parse_str(id).map_err(|_| anyhow!("Not a valid uuid: {}", id))?;
-  if let Some(u) = users::Entity::find_by_id(uid).one(&db).await? {
+  if let Some(u) = users::Entity::find_by_id(uid).one(conn).await? {
     let data = serde_json::to_string(&u).unwrap();
     redis
       .set(
@@ -81,12 +78,12 @@ pub async fn create_token(token: &str, id: &str) -> Result<()> {
   Ok(())
 }
 
-pub async fn get_user_by_token(token: &str, db: DatabaseConnection) -> Result<Option<users::Model>> {
+pub async fn get_user_by_token(token: &str, conn: &DatabaseConnection) -> Result<Option<users::Model>> {
   let key = format!("{}{}", TOKEN_CACHE_PREFIX, token);
   let redis = util::cache::redis().await;
   let uid: Option<String> = redis.get(&key).await?;
   match uid {
-    Some(v) => return get_user(&v, db).await,
+    Some(v) => return get_user(&v, &conn).await,
     None => return Ok(None),
   }
 }
@@ -114,7 +111,7 @@ mod tests {
   async fn test_get_from_cache() {
     let db = init().await;
     let key = "a39e5954-a827-4467-8b7c-fbbe7fdfa567";
-    let u = get_user(key, key, &db.conn).await.unwrap();
+    let u = get_user(key, &db.conn).await.unwrap();
     info!("User: {u:?}");
   }
 }
