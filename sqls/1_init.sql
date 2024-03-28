@@ -3,8 +3,8 @@ CREATE TABLE Users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(20),
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    hash TEXT NOT NULL,
+    password TEXT,
+    hash TEXT,
     status SMALLINT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP

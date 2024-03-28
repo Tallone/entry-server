@@ -4,10 +4,11 @@ gen_crud!(activations);
 
 #[cfg(test)]
 mod tests {
-  use dotenvy::dotenv;
-use log::info;
-use sea_orm::Set;
   use super::*;
+  use dotenvy::dotenv;
+  use log::info;
+  use sea_orm::Set;
+  use uuid::Uuid;
 
   use crate::{conf::ApplicationConf, db::DB};
   use time::OffsetDateTime;
@@ -26,13 +27,18 @@ use sea_orm::Set;
   #[tokio::test]
   async fn test_create() {
     let db = init().await;
-    let model = Mutation::create(db.conn, activations::ActiveModel {
+    let model = Mutation::create(
+      db.conn,
+      activations::ActiveModel {
         license_id: Set(1),
         user_id: Set(Uuid::new_v4()),
         ip_address: Set("127.0.0.1".to_owned()),
         activation_date: Set(OffsetDateTime::now_utc()),
         ..Default::default()
-    }).await.unwrap();
+      },
+    )
+    .await
+    .unwrap();
     info!("mode: {:?}", model);
   }
 }

@@ -1,5 +1,3 @@
-#![warn(unused_imports, clippy::expect_fun_call)]
-
 use anyhow::Ok;
 use axum::Router;
 use conf::ApplicationConf;

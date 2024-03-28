@@ -1,4 +1,4 @@
-use std::{env, time::Duration};
+use std::env;
 
 use fred::{
   clients::RedisPool,
@@ -9,7 +9,6 @@ use tokio::sync::OnceCell;
 
 const ENV_REDIS_URL: &str = "REDIS_URL";
 const POOL_SIZE: usize = 4;
-const DEFAULT_EXPIRE_DURATION: Duration = Duration::from_secs(2 * 60 * 60);
 static INSTANCE: OnceCell<RedisPool> = OnceCell::const_new();
 
 /// Get an `RedisClient`

@@ -1,5 +1,3 @@
-use std::u16;
-
 use base64ct::{Base64, Encoding};
 pub use fred::prelude::*;
 pub mod cache;

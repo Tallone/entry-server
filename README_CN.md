@@ -25,3 +25,47 @@ Web 框架：Axum
 数据库：PostgreSQL 与 SeaORM
 
 缓存：Redis 与 Fred
+
+## 如何*运行*
+
+在clone项目之后
+
+1. 准备环境变量:
+
+    项目使用`dotenv`去初始化环境变量，意味着你可以在项目根目录创建一个`.env`文件去定义变量。
+
+    下面是一些必要的环境变量，请勿将下列信息用在生产环境:
+
+    ```bash
+
+    DATABASE_URL=postgres://entry_server:123456@127.0.0.1:5432/entry
+    POSTGRES_DB=entry
+    POSTGRES_USER=entry_server
+    POSTGRES_PASSWORD=123456
+
+    REDIS_URL=redis://127.0.0.1:6379
+
+    ENTRY_SERVER_ADDR=127.0.0.1:3000
+    ```
+
+    另外还有一些不必要的环境变量，当你需要用到一些别的特性的时候可能会用到。
+
+2. 准备数据表：
+    
+    在`sql`目录下有一个初始化脚本，你需要先运行它。
+    
+3. 启动服务依赖：
+    
+    ```bash
+    docker compose -f docker-compose.yaml up -d
+    ```
+    
+4. 运行
+    
+    ```bash
+    cargo run
+    ```
+
+## 如何*部署*
+
+todo!()

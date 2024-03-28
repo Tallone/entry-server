@@ -1,9 +1,10 @@
 use axum::Router;
 
 use crate::{error::AppError, state::AppState};
-pub mod activation;
+pub(crate) mod activation;
 pub(crate) mod entity;
-pub mod license;
+pub(crate) mod license;
+pub(crate) mod macros;
 pub(crate) mod user;
 pub(crate) type Result<T> = std::result::Result<T, AppError>;
 

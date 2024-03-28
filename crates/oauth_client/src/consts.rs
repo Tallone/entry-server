@@ -1,8 +1,7 @@
-use std::{error, str::FromStr};
+use std::str::FromStr;
 
 use thiserror::Error;
 
-pub const ENV_REDIRECT_URL: &str = "ENTRY_OAUTH_REDIRECT_URL";
 pub const ENV_GITHUB_CLIENT_ID: &str = "ENTRY_OAUTH_GITHUB_CLIENT_ID";
 pub const ENV_GITHUB_CLIENT_SECRET: &str = "ENTRY_OAUTH_GITHUB_CLIENT_SECRET";
 

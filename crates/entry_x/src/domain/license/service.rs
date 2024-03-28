@@ -1,5 +1,5 @@
-use crate::{domain::entity::licenses, gen_crud};
-
+use crate::domain::entity::licenses;
+use crate::gen_crud;
 
 gen_crud!(licenses);
 
@@ -44,18 +44,34 @@ mod tests {
     )
     .await
     .unwrap();
-  assert!(v.id > 0);
-  let id = v.id.clone();
-  let v = Query::get(db.conn.clone(), licenses::Column::Key, v.key).await.unwrap();
-  assert!(v.is_some());
-  let v = Query::get_by_id(db.conn.clone(), id).await.unwrap();
-  assert!(v.is_some());
-  assert_eq!(v.unwrap().id, id);
-  let v = Mutation::update(db.conn.clone(), licenses::ActiveModel{id: Set(id), status:Set(1), ..Default::default()}).await.unwrap();
-  assert_eq!(v.status, 1);
-  let r = Mutation::delete_one(db.conn.clone(), licenses::ActiveModel { id: Set(id), ..Default::default()}).await.unwrap();
-  assert!(r);
-
+    assert!(v.id > 0);
+    let id = v.id.clone();
+    let v = Query::get(db.conn.clone(), licenses::Column::Key, v.key).await.unwrap();
+    assert!(v.is_some());
+    let v = Query::get_by_id(db.conn.clone(), id).await.unwrap();
+    assert!(v.is_some());
+    assert_eq!(v.unwrap().id, id);
+    let v = Mutation::update(
+      db.conn.clone(),
+      licenses::ActiveModel {
+        id: Set(id),
+        status: Set(1),
+        ..Default::default()
+      },
+    )
+    .await
+    .unwrap();
+    assert_eq!(v.status, 1);
+    let r = Mutation::delete_one(
+      db.conn.clone(),
+      licenses::ActiveModel {
+        id: Set(id),
+        ..Default::default()
+      },
+    )
+    .await
+    .unwrap();
+    assert!(r);
   }
 
   #[tokio::test]

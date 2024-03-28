@@ -1,6 +1,6 @@
-use std::{cell::OnceCell, env, sync::OnceLock, time::Duration};
+use std::{env, sync::OnceLock};
 
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use log::error;
 use reqwest::{
@@ -22,7 +22,6 @@ static INSTANCE: OnceLock<GithubOAuthStrategy> = OnceLock::new();
 pub struct GithubOAuthStrategy {
   client_id: String,
   client_secret: String,
-  redirect_url: String,
 }
 
 impl GithubOAuthStrategy {
@@ -32,13 +31,10 @@ impl GithubOAuthStrategy {
         .expect(format!("Missing environment {}", consts::ENV_GITHUB_CLIENT_ID).as_str());
       let client_secret = env::var(consts::ENV_GITHUB_CLIENT_SECRET)
         .expect(format!("Missing environment {}", consts::ENV_GITHUB_CLIENT_SECRET).as_str());
-      let redirect_url =
-        env::var(consts::ENV_REDIRECT_URL).expect(format!("Missing environment {}", consts::ENV_REDIRECT_URL).as_str());
 
       Self {
         client_id,
         client_secret,
-        redirect_url,
       }
     })
   }
@@ -46,7 +42,7 @@ impl GithubOAuthStrategy {
 
 #[async_trait]
 impl OAuthStrategy for GithubOAuthStrategy {
-  async fn get_auth_url(&self) -> Result<Url> {
+  async fn get_auth_url(&self, redirect_url: &str) -> Result<Url> {
     let api = format!("{}{}", OAUTH_HOST, "/login/oauth/authorize");
     let mut url: Url = Url::parse(&api).unwrap();
 
@@ -55,7 +51,7 @@ impl OAuthStrategy for GithubOAuthStrategy {
     cache
       .set(
         self.get_state_cache_key(state.as_str()),
-        state.as_str(),
+        redirect_url,
         Some(util::Expiration::EX(30 * 60)),
         None,
         false,
@@ -69,32 +65,26 @@ impl OAuthStrategy for GithubOAuthStrategy {
     url
       .query_pairs_mut()
       .append_pair("client_id", &self.client_id)
-      .append_pair("redirect_url", &self.redirect_url)
+      .append_pair("redirect_url", redirect_url)
       .append_pair("scope", "user")
       .append_pair("state", &state);
 
     Ok(url)
   }
 
-  async fn get_access_token(&self, code: String, state: String) -> Result<String> {
-    // Check state is in cache,
-    util::cache::redis()
+  async fn get_access_token(&self, code: &str, state: &str) -> Result<String> {
+    // Check state is in cache
+    let redirect_url: String = util::cache::redis()
       .await
-      .exists(self.get_state_cache_key(&state))
+      .get(self.get_state_cache_key(&state))
       .await
-      .map_or(Err(OAuthError::InvalidState), |count: i32| {
-        if count == 0 {
-          Err(OAuthError::InvalidState)
-        } else {
-          Ok(())
-        }
-      })?;
+      .map_err(|_| OAuthError::InvalidState)?;
 
     let api = format!("{}{}", OAUTH_HOST, "/login/oauth/access_token");
     let body = GetAccessTokenRequest {
       client_id: &self.client_id,
       client_secret: &self.client_secret,
-      redirect_uri: &self.redirect_url,
+      redirect_uri: &redirect_url,
       code,
     };
     let client = util::http::client();
@@ -157,7 +147,8 @@ mod tests {
   #[tokio::test]
   async fn test_auth_url() {
     let o = init();
-    let auth_url = o.get_auth_url().await.unwrap();
+    let redirect_url = "http://localhost:3000";
+    let auth_url = o.get_auth_url(redirect_url).await.unwrap();
     info!("auth url: {}", auth_url);
   }
 
@@ -165,16 +156,10 @@ mod tests {
   async fn test_get_info() {
     let code = "182e45dde89fdfad7140";
     let state = "1e0933e9-854a-4568-868f-01c2e5916f5e";
-    let mut o = init();
-    let token = o.get_access_token(code.to_owned(), state.to_owned()).await.unwrap();
+    let o = init();
+    let token = o.get_access_token(code, state).await.unwrap();
     info!("token: {token}");
     let user = o.get_user(&token).await.unwrap();
     info!("User: {:?}", user);
-  }
-
-  #[tokio::test]
-  async fn test_redis() {
-    let o = init();
-    let cli = util::cache::redis().await;
   }
 }

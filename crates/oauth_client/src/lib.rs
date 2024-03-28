@@ -26,14 +26,14 @@ pub(crate) struct GetAccessTokenRequest<'a> {
   pub client_id: &'a str,
   pub client_secret: &'a str,
   pub redirect_uri: &'a str,
-  pub code: String,
+  pub code: &'a str,
 }
 
 #[async_trait]
 pub trait OAuthStrategy {
-  async fn get_auth_url(&self) -> Result<Url>;
+  async fn get_auth_url(&self, redirect_url: &str) -> Result<Url>;
 
-  async fn get_access_token(&self, code: String, state: String) -> Result<String>;
+  async fn get_access_token(&self, code: &str, state: &str) -> Result<String>;
 
   async fn get_user(&self, token: &str) -> Result<AuthUser>;
 
