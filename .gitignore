@@ -7,3 +7,4 @@ Cargo.lock
 .env
 .cargo
 .vscode
+.DS_Store
