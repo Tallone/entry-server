@@ -29,8 +29,8 @@ pub enum AppError {
   #[error("Request is not valid")]
   RequestNotValid,
 
-  #[error("Can't find record")]
-  RecordNotFound,
+  #[error("Resource not exist")]
+  ResourceNotExist,
 
   #[error("The provided client token is invalid or expired. Please check your credentials and try again.")]
   InvalidToken,
@@ -42,16 +42,16 @@ pub enum AppError {
 impl AppError {
   pub fn code(&self) -> u32 {
     match self {
-      AppError::Biz(_) => 4000,
-      AppError::RequestNotValid => 4010,
-      AppError::OAuth(_) => 4011,
+      AppError::Unknown => 9999,
+      AppError::Biz(_) => 8000,
       AppError::IO(_) => 1500,
       AppError::Db(_) => 1510,
       AppError::Redis(_) => 1520,
-      AppError::Unknown => 9999,
-      AppError::ApiNotFound => 404,
-      AppError::RecordNotFound => 4040,
-      AppError::InvalidToken => 403,
+      AppError::RequestNotValid => 4010,
+      AppError::OAuth(_) => 4011,
+      AppError::ResourceNotExist => 4040,
+      AppError::InvalidToken => 4403,
+      AppError::ApiNotFound => 4404,
     }
   }
 

@@ -54,8 +54,7 @@ pub(crate) async fn oauth_login(
     }
   };
 
-  let token = util::rand_str(64);
-  service::create_token(&token, &record.id.to_string()).await?;
+  let token = service::create_token(&record.id.to_string()).await?;
 
   Ok(ApiResponse::ok(token))
 }

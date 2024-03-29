@@ -38,4 +38,3 @@ uuid.workspace = true
 axum-macros = "0.4.1"
 tower-http = { version = "0.5.2", features = ["cors"] }
 http-body-util = "0.1.1"
-argon2 = { version = "0.5.3" }

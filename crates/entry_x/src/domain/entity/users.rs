@@ -13,9 +13,6 @@ pub struct Model {
   #[sea_orm(column_type = "Text")]
   #[serde(skip_serializing)]
   pub password: Option<String>,
-  #[sea_orm(column_type = "Text")]
-  #[serde(skip_serializing)]
-  pub hash: Option<String>,
   pub status: i16,
   pub created_at: TimeDateTimeWithTimeZone,
   pub updated_at: TimeDateTimeWithTimeZone,

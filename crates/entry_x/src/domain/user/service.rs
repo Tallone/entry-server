@@ -63,7 +63,10 @@ pub async fn get_user(id: &str, conn: &DatabaseConnection) -> Result<Option<user
 }
 
 const TOKEN_CACHE_PREFIX: &str = "TOKEN_";
-pub async fn create_token(token: &str, id: &str) -> Result<()> {
+
+/// Generate a token for user `id` and store it in cache
+pub async fn create_token(id: &str) -> Result<String> {
+  let token = util::rand_str(64);
   let key = format!("{}{}", TOKEN_CACHE_PREFIX, token);
   let redis = util::cache::redis().await;
   redis
@@ -75,7 +78,7 @@ pub async fn create_token(token: &str, id: &str) -> Result<()> {
       false,
     )
     .await?;
-  Ok(())
+  Ok(token)
 }
 
 pub async fn get_user_by_token(token: &str, conn: &DatabaseConnection) -> Result<Option<users::Model>> {
