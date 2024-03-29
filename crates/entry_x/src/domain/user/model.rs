@@ -38,3 +38,9 @@ pub(crate) struct LoginReq {
   pub email: String,
   pub password: String,
 }
+
+#[derive(Deserialize)]
+pub(crate) struct UpdatePasswdReq {
+  pub new_password: String,
+  pub old_password: Option<String>,
+}

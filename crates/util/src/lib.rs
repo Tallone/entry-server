@@ -8,7 +8,11 @@ pub mod http;
 
 use rand::rngs::OsRng;
 use sha2::{Digest, Sha256};
+use time::macros::format_description;
+use time::{OffsetDateTime, UtcOffset};
 use uuid::Uuid;
+
+pub const DEFAULT_TIME_OFFSET: i8 = 8;
 
 /// Obtain a random UUID string
 pub fn rand_uuid() -> String {
@@ -20,6 +24,19 @@ pub fn rand_str(len: usize) -> String {
   let seed = rand_uuid();
   let hash = Sha256::new().chain_update(seed).finalize();
   Base64::encode_string(&hash).chars().take(len).collect()
+}
+
+/// Get current timestamp in milliseconds
+pub fn current_ms() -> u64 {
+  let dt = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(DEFAULT_TIME_OFFSET, 0, 0).unwrap());
+  dt.unix_timestamp_nanos() as u64 / 1_000_000
+}
+
+/// Get current formatted datetime
+pub fn current_time() -> String {
+  let dt = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(DEFAULT_TIME_OFFSET, 0, 0).unwrap());
+  let fmt = format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
+  dt.format(fmt).unwrap()
 }
 
 /// Encrypt password using argon algorithmic

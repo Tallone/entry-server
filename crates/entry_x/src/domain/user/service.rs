@@ -5,24 +5,20 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, Qu
 use util::{Expiration, KeysInterface};
 use uuid::Uuid;
 
-use crate::domain::{entity::users, Result};
+use crate::{
+  domain::{entity::users, Result},
+  gen_mutation, gen_query,
+};
 
 use super::model::GetReq;
 
 const DEFAULT_CACHE_DURATION: Duration = Duration::from_secs(2 * 30 * 60);
 
-pub(crate) struct Mutation;
-pub(crate) struct Query;
-
-impl Mutation {
-  pub async fn create(conn: &DatabaseConnection, model: users::ActiveModel) -> Result<users::Model> {
-    let ret = model.insert(conn).await?;
-    Ok(ret)
-  }
-}
+gen_mutation!(users);
+gen_query!(users);
 
 impl Query {
-  pub async fn get(conn: &DatabaseConnection, opt: GetReq) -> Result<Option<users::Model>> {
+  pub async fn get_opt(conn: &DatabaseConnection, opt: GetReq) -> Result<Option<users::Model>> {
     let query = users::Entity::find();
     let query = match opt {
       GetReq::Id(id) => query.filter(users::Column::Id.eq(id)),

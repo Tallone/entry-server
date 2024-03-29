@@ -28,7 +28,7 @@ mod tests {
   async fn test_create() {
     let db = init().await;
     let model = Mutation::create(
-      db.conn,
+      &db.conn,
       activations::ActiveModel {
         license_id: Set(1),
         user_id: Set(Uuid::new_v4()),

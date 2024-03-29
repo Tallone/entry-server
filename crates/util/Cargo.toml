@@ -6,6 +6,7 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+time.workspace = true
 anyhow.workspace = true
 rand.workspace = true
 uuid.workspace = true
@@ -15,4 +16,5 @@ serde.workspace = true
 fred = "8.0.5"
 sha2 = "0.10"
 base64ct.workspace = true
-argon2 = { version = "0.5.3", features = ["password-hash"]}
+argon2 = { version = "0.5.3", features = ["password-hash"] }
+

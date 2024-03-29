@@ -34,7 +34,7 @@ mod tests {
     let key = Uuid::new_v4().to_string();
     let until = OffsetDateTime::now_utc().checked_add(Duration::days(365)).unwrap();
     let v = Mutation::create(
-      db.conn.clone(),
+      &db.conn,
       licenses::ActiveModel {
         key: Set(key),
         status: Set(0),
@@ -46,13 +46,13 @@ mod tests {
     .unwrap();
     assert!(v.id > 0);
     let id = v.id.clone();
-    let v = Query::get(db.conn.clone(), licenses::Column::Key, v.key).await.unwrap();
+    let v = Query::get(&db.conn, licenses::Column::Key, v.key).await.unwrap();
     assert!(v.is_some());
-    let v = Query::get_by_id(db.conn.clone(), id).await.unwrap();
+    let v = Query::get_by_id(&db.conn, id).await.unwrap();
     assert!(v.is_some());
     assert_eq!(v.unwrap().id, id);
     let v = Mutation::update(
-      db.conn.clone(),
+      &db.conn,
       licenses::ActiveModel {
         id: Set(id),
         status: Set(1),
@@ -63,7 +63,7 @@ mod tests {
     .unwrap();
     assert_eq!(v.status, 1);
     let r = Mutation::delete_one(
-      db.conn.clone(),
+      &db.conn,
       licenses::ActiveModel {
         id: Set(id),
         ..Default::default()
@@ -82,7 +82,7 @@ mod tests {
       "17a5ff05-5d7c-47ac-b3b7-a26c5124354d",
     ];
     let data = Query::list_in(
-      db.conn,
+      &db.conn,
       licenses::Column::Key,
       keys,
       Some(ColumnOrder {

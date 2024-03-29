@@ -1,5 +1,5 @@
 use axum::{
-  routing::{get, post},
+  routing::{get, patch, post, put},
   Router,
 };
 
@@ -15,6 +15,7 @@ pub fn router() -> Router<AppState> {
   Router::new()
     .route("/", post(api::create).get(api::current))
     .route("/token", post(api::login))
+    .route("/password", patch(api::update_password))
     .nest(
       "/oauth",
       Router::new().route("/:provider", get(auth_api::oauth_url).post(auth_api::oauth_login)),

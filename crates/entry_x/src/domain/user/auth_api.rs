@@ -37,7 +37,7 @@ pub(crate) async fn oauth_login(
   let strategy = get_strategy(provider);
   let access_token = strategy.get_access_token(&payload.code, &payload.state).await?;
   let auth_user = strategy.get_user(&access_token).await?;
-  let record = match service::Query::get(&db.conn, GetReq::Email(auth_user.email.clone())).await? {
+  let record = match service::Query::get_opt(&db.conn, GetReq::Email(auth_user.email.clone())).await? {
     Some(u) => u,
     None => {
       let u = service::Mutation::create(

@@ -15,7 +15,6 @@ mod error;
 mod logger;
 mod middleware;
 mod state;
-mod tool;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

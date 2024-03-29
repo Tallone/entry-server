@@ -8,5 +8,3 @@ pub const HEADER_REQUEST_ID: &str = "x-request-id";
 
 // Identify current login user
 pub const HEADER_TOKEN: &str = "token";
-
-pub const DEFAULT_TIME_OFFSET: i8 = 8;
