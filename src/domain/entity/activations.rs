@@ -8,14 +8,15 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
   #[sea_orm(primary_key)]
   pub id: i32,
-  pub license_id: i32,
+  #[sea_orm(column_type = "Text")]
+  pub license_key: String,
   pub user_id: Uuid,
   #[sea_orm(column_type = "Text", nullable)]
   pub device_id: Option<String>,
   #[sea_orm(column_type = "Text")]
   pub ip_address: String,
-  pub activation_date: TimeDateTimeWithTimeZone,
-  pub created_at: TimeDateTimeWithTimeZone,
+  pub activation_date: DateTimeWithTimeZone,
+  pub created_at: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

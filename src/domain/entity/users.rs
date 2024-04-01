@@ -13,11 +13,9 @@ pub struct Model {
   pub email: String,
   #[sea_orm(column_type = "Text", nullable)]
   pub password: Option<String>,
-  #[sea_orm(column_type = "Text", nullable)]
-  pub hash: Option<String>,
   pub status: i16,
-  pub created_at: TimeDateTimeWithTimeZone,
-  pub updated_at: TimeDateTimeWithTimeZone,
+  pub created_at: i64,
+  pub updated_at: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
