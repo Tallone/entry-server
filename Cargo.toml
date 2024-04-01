@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/entry_x", "crates/oauth_client", "crates/util"]
+members = ["crates/entry_x", "crates/oauth_client", "crates/task", "crates/util"]
 default-members = ["crates/entry_x"]
 [workspace.package]
 name = "entry-server"

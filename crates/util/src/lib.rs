@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use anyhow::anyhow;
 use argon2::{password_hash::SaltString, Argon2};
 use argon2::{PasswordHash, PasswordHasher, PasswordVerifier};
@@ -28,8 +30,10 @@ pub fn rand_str(len: usize) -> String {
 
 /// Get current timestamp in milliseconds
 pub fn current_ms() -> u64 {
-  let dt = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(DEFAULT_TIME_OFFSET, 0, 0).unwrap());
-  dt.unix_timestamp_nanos() as u64 / 1_000_000
+  let now = SystemTime::now();
+  let since_the_epoch = now.duration_since(SystemTime::UNIX_EPOCH).expect("Time went backwards");
+
+  since_the_epoch.as_millis() as u64
 }
 
 /// Get current formatted datetime
