@@ -11,9 +11,9 @@ pub struct Model {
   #[sea_orm(column_type = "Text", unique)]
   pub key: String,
   pub status: i16,
-  pub valid_until: TimeDateTimeWithTimeZone,
-  pub created_at: TimeDateTimeWithTimeZone,
-  pub updated_at: TimeDateTimeWithTimeZone,
+  pub valid_until: i64,
+  pub created_at: i64,
+  pub updated_at: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

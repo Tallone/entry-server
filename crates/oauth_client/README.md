@@ -1,4 +1,4 @@
-## Entry Server的OAuth Client模块
+## OAuth Client module
 
 ### Environments
 
