@@ -6,12 +6,7 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { workspace = true, features = [
-    "time",
-    "macros",
-    "sync",
-    "signal",
-    "rt",
-] }
+async-trait.workspace = true
+tokio = { workspace = true, features = ["time", "macros", "sync", "rt"] }
 log.workspace = true
 util.workspace = true

@@ -1,9 +1,12 @@
+use std::time::Duration;
+
 use anyhow::Ok;
 use axum::Router;
 use conf::ApplicationConf;
 use db::DB;
 use dotenvy::dotenv;
 use log::info;
+use tokio::sync::broadcast;
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -23,10 +26,13 @@ async fn main() -> anyhow::Result<()> {
   let conf = ApplicationConf::from_env();
   let db = DB::new(&conf).await?;
 
+  let (tx, mut rx) = broadcast::channel(8);
+
+  let mut scheduler = task::schedule::Scheduler::new(Duration::from_millis(100), rx);
+  scheduler.start_tick();
+
   let state = state::AppState { db };
-
   let cors = CorsLayer::new().allow_methods(Any).allow_origin(Any);
-
   let app = Router::new()
     .nest("/api", domain::router())
     .with_state(state)

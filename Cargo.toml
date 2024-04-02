@@ -1,6 +1,11 @@
 [workspace]
 resolver = "2"
-members = ["crates/entry_x", "crates/oauth_client", "crates/task", "crates/util"]
+members = [
+    "crates/entry_x",
+    "crates/oauth_client",
+    "crates/task",
+    "crates/util",
+]
 default-members = ["crates/entry_x"]
 [workspace.package]
 name = "entry-server"
@@ -28,6 +33,7 @@ uuid = { version = "1.7.0", features = ["v4", "serde"] }
 
 entry_x = { path = "crates/entry_x" }
 util = { path = "crates/util" }
+task = { path = "crates/task" }
 oauth_client = { path = "crates/oauth_client" }
 time = { version = "0.3.34", features = ["serde-human-readable"] }
 
