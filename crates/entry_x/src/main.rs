@@ -22,14 +22,21 @@ mod state;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
   dotenv().expect(".env file not found");
+
+  // Initialize logger
   logger::init();
+
+  // Parse configuration from environment
   let conf = ApplicationConf::from_env();
+
+  // Connect to database
   let db = DB::new(&conf).await?;
 
-  let (tx, mut rx) = broadcast::channel(8);
+  // The shutdown channel
+  let (tx, mut rx) = broadcast::channel::<()>(8);
 
-  let mut scheduler = task::schedule::Scheduler::new(Duration::from_millis(100), rx);
-  scheduler.start_tick();
+  // Start task system
+  task::start_tick(Duration::from_millis(100), rx);
 
   let state = state::AppState { db };
   let cors = CorsLayer::new().allow_methods(Any).allow_origin(Any);
