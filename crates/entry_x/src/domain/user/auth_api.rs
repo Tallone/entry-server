@@ -17,6 +17,9 @@ use super::{
 
 type Result<T> = std::result::Result<ApiResponse<T>, AppError>;
 
+/// Get `provider` authentication url
+/// 
+/// When auth finished, browser will redirect to `redirect_url`
 pub(crate) async fn oauth_url(Path(provider): Path<String>, redirect_url: Query<String>) -> Result<String> {
   let provider = OAuthProvider::from_str(&provider)?;
   let strategy = get_strategy(provider);
@@ -24,7 +27,7 @@ pub(crate) async fn oauth_url(Path(provider): Path<String>, redirect_url: Query<
   Ok(ApiResponse::ok(url.to_string()))
 }
 
-/// Perform OAuth login with provider code and state.
+/// Perform OAuth login with `provider` code and state.
 ///
 /// If the retrieved email information does not exist, it will register as a new user.
 pub(crate) async fn oauth_login(

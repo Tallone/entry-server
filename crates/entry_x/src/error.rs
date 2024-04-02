@@ -37,6 +37,12 @@ pub enum AppError {
 
   #[error(transparent)]
   OAuth(#[from] OAuthError),
+
+  #[error("This license is not valid")]
+  LicenseNotValid,
+
+  #[error("This license has expired")]
+  LicenseExpired,
 }
 
 impl AppError {
@@ -52,6 +58,8 @@ impl AppError {
       AppError::ResourceNotExist => 4040,
       AppError::InvalidToken => 4403,
       AppError::ApiNotFound => 4404,
+      AppError::LicenseNotValid => 4300,
+      AppError::LicenseExpired => 4301,
     }
   }
 

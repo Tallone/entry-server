@@ -4,6 +4,8 @@ macro_rules! gen_query {
     use crate::db::ColumnOrder;
     use sea_orm::{QueryOrder, QueryTrait};
     pub(crate) struct Query;
+
+    #[allow(dead_code)]
     impl Query {
       // Convenient way to get `Select`
       fn get_select() -> sea_orm::Select<$entity::Entity> {
@@ -77,6 +79,7 @@ macro_rules! gen_mutation {
     use sea_orm::prelude::*;
     pub(crate) struct Mutation;
 
+    #[allow(dead_code)]
     impl Mutation {
       pub async fn create(
         conn: &sea_orm::DatabaseConnection,

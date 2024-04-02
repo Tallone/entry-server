@@ -22,10 +22,13 @@ CREATE TABLE licenses (
 -- Create the ActivationLogs table
 CREATE TABLE activations (
     id SERIAL PRIMARY KEY,
-    license_id INT NOT NULL,
+    license_key INT NOT NULL,
     user_id UUID NOT NULL,
     device_id TEXT,
     ip_address TEXT NOT NULL,
     activation_date TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_uid_lid ON activations (user_id, license_id);
+
