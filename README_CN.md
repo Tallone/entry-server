@@ -18,13 +18,13 @@ Entry-Server 是一个强大、完备的 Rust 后端项目，可直接使用。�
 
 ## **技术堆栈**
 
-开发语言：Rust
+- 开发语言：Rust
 
-Web 框架：Axum
+- Web 框架：Axum
 
-数据库：PostgreSQL 与 SeaORM
+- 数据库：PostgreSQL 与 [SeaORM](https://github.com/SeaQL/sea-orm)
 
-缓存：Redis 与 Fred
+- 缓存：Redis 与 [Fred](https://github.com/aembke/fred.rs)
 
 ## 如何*运行*
 
