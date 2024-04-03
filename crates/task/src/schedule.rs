@@ -1,12 +1,9 @@
-use std::{collections::BinaryHeap, future::Future, pin::Pin, time::Duration};
+use std::{collections::BinaryHeap, future::Future, pin::Pin};
 
 use log::info;
-use tokio::{
-  sync::broadcast,
-  time::{interval, Interval},
-};
+use tokio::sync::Mutex;
 
-use crate::cons::TaskDuration;
+use crate::{cons::TaskDuration, TaskLogic};
 
 /// Represent a scheduled task that will be triggered in future
 struct ScheduledTask {
@@ -14,13 +11,14 @@ struct ScheduledTask {
   pub task_duration: TaskDuration,
   // The task name
   pub name: String,
+  // Whether log at start and end
+  pub log: bool,
 
   // The task logic
-  pub(crate) logic: Pin<Box<dyn Future<Output = ()> + Send>>,
+  pub(crate) logic: Box<TaskLogic>,
 
   // Last trigger time in epoch milliseconds
   pub(crate) last_trigger_time: u64,
-
   // Next trigger time in epoch milliseconds
   pub(crate) next_trigger_time: u64,
 }
@@ -47,54 +45,59 @@ impl Ord for ScheduledTask {
 }
 
 pub(crate) struct Scheduler {
-  tasks: BinaryHeap<ScheduledTask>,
+  tasks: Mutex<BinaryHeap<ScheduledTask>>,
 }
 
 impl Scheduler {
   pub fn new() -> Self {
     Self {
-      tasks: BinaryHeap::new(),
+      tasks: Mutex::new(BinaryHeap::new()),
     }
   }
 
-  pub fn add_task<Fut>(&mut self, name: &str, dur: TaskDuration, logic: Fut)
+  pub async fn schedule_task<F>(&self, name: &str, log: bool, dur: TaskDuration, logic: F)
   where
-    Fut: Future<Output = ()> + Send + 'static,
+    F: 'static,
+    F: Fn() -> Pin<Box<dyn Future<Output = ()> + Send + 'static>> + Send + Sync,
   {
     let n = util::current_ms() + dur.get_duration_ms();
-    let task = ScheduledTask {
+    let mut tasks = self.tasks.lock().await;
+    tasks.push(ScheduledTask {
+      log,
       task_duration: dur,
       name: name.to_owned(),
-      logic: Box::pin(logic),
+      logic: Box::new(logic),
       last_trigger_time: 0,
       next_trigger_time: n,
-    };
-    self.tasks.push(task);
+    });
   }
 
-  pub fn cancel_task(&mut self, task_name: &str) {
-    self.tasks = self
-      .tasks
-      .drain()
-      .filter(|task| task.name.as_str() != task_name)
-      .collect();
-  }
-
-  pub fn tick(&mut self) {
+  pub async fn tick(&self) {
+    let mut tasks = self.tasks.lock().await;
     let mut cur = util::current_ms();
-    while cur != 0 {
-      if let Some(mut task) = self.tasks.peek_mut() {
-        if task.next_trigger_time <= cur {
-          task.last_trigger_time = cur;
+    while let Some(mut task) = tasks.pop() {
+      if task.next_trigger_time > cur {
+        tasks.push(task);
+        break;
+      }
 
-          if let TaskDuration::OneTime(_) = task.task_duration {
-            self.cancel_task(&task.name);
-          }
-          tokio::spawn(async move {
-            task.logic.await;
-            task.next_trigger_time = cur + task.task_duration.get_duration_ms();
-          });
+      if task.log {
+        info!("[Scheduler-{}] Start executing.", task.name);
+      }
+      task.last_trigger_time = cur;
+
+      let task_name = task.name.clone();
+      let future = (task.logic)();
+      tokio::spawn(async move {
+        future.await;
+        if task.log {
+          info!("[Scheduler-{}] Execution completed.", task_name);
         }
+      });
+
+      if let TaskDuration::Repeated(dur) = task.task_duration {
+        task.next_trigger_time = cur + dur.as_millis() as u64;
+        tasks.push(task);
       }
 
       cur = 0;
