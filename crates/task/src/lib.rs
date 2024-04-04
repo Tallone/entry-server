@@ -1,6 +1,7 @@
 use std::{
   future::Future,
-  sync::{Arc, Mutex, OnceLock},
+  pin::Pin,
+  sync::{Arc, OnceLock},
   time::Duration,
 };
 
@@ -11,21 +12,23 @@ use tokio::{sync::broadcast, time::interval};
 mod cons;
 mod schedule;
 
+pub(crate) type TaskLogic = dyn Fn() -> Pin<Box<dyn Future<Output = ()> + Send + 'static>> + Send + Sync;
 /// This is a static instance of `OnceLock` that holds an `Arc<Mutex<Scheduler>>`.
 /// `OnceLock` ensures that the initialization of the `Scheduler` happens only once,
 /// even if multiple threads try to access it simultaneously.
-static INSTANCE: OnceLock<Arc<Mutex<Scheduler>>> = OnceLock::new();
+static INSTANCE: OnceLock<Arc<Scheduler>> = OnceLock::new();
 
 /// This function returns an `Arc<Mutex<Scheduler>>` instance.
-fn schedule() -> Arc<Mutex<Scheduler>> {
+fn schedule() -> Arc<Scheduler> {
   INSTANCE
     .get_or_init(|| {
       let ret = Scheduler::new();
-      Arc::new(Mutex::new(ret))
+      Arc::new(ret)
     })
     .clone()
 }
 
+/// Start `Scheduler` scheduling
 pub fn start_tick(period: Duration, mut shutdown_channel: broadcast::Receiver<()>) {
   tokio::spawn(async move {
     let mut interval = interval(period);
@@ -36,9 +39,8 @@ pub fn start_tick(period: Duration, mut shutdown_channel: broadcast::Receiver<()
             return;
         }
         _ = interval.tick() => {
-            let binding = schedule();
-            let mut s = binding.lock().unwrap();
-            s.tick();
+            let inst = schedule();
+            inst.tick().await;
         }
       }
     }
@@ -48,42 +50,40 @@ pub fn start_tick(period: Duration, mut shutdown_channel: broadcast::Receiver<()
 /// `add_once_task` registers a future `f` with the `Scheduler` to be triggered once
 /// after the specified `delay`.
 ///
-/// `name` is a string identifier for the task.
-/// `delay` is the duration after which the task should be triggered.
-/// `f` is the future that will be executed when the task is triggered.
+/// When `log` is true, it will print start and end log;
 ///
-/// Add--(dur)-->Run->Remove
-pub fn add_once_task<Fut>(name: &str, delay: Duration, f: Fut)
+/// example:
+/// ```
+/// task::add_once_task("Once_task", true, Duration::from_secs(3), || Box::pin(async {})).await;
+///
+/// ```
+pub async fn add_once_task<F>(name: &str, log: bool, delay: Duration, f: F)
 where
-  Fut: Future<Output = ()> + Send + 'static,
+  F: 'static,
+  F: Fn() -> Pin<Box<dyn Future<Output = ()> + Send + 'static>> + Send + Sync,
 {
-  let binding = schedule();
-  let mut s = binding.lock().unwrap();
-  s.add_task(name, cons::TaskDuration::OneTime(delay), f);
+  let inst = schedule();
+  inst
+    .schedule_task(name, log, cons::TaskDuration::OneTime(delay), f)
+    .await;
 }
 
 /// `add_repeated_task` registers a future `f` with the `Scheduler` to be triggered
 /// periodically with the specified `dur`.
 ///
-/// `name` is a string identifier for the task.
-/// `delay` is the duration after which the task should be triggered repeatedly.
-/// `f` is the future that will be executed when the task is triggered.
+/// When `log` is true, it will print start and end log;
 ///
-///  Add--(dur)-->Run_Start-->Run_End--(dur)-->Run Start-->Run_End--...
-pub fn add_repeated_task<Fut>(name: &str, dur: Duration, f: Fut)
+/// example:
+/// ```
+/// task::add_repeated_task("Repeated task 5s", true, Duration::from_secs(5), || Box::pin(async {})).await;
+/// ```
+pub async fn add_repeated_task<F>(name: &str, log: bool, dur: Duration, f: F)
 where
-  Fut: Future<Output = ()> + Send + 'static,
+  F: 'static,
+  F: Fn() -> Pin<Box<dyn Future<Output = ()> + Send + 'static>> + Send + Sync,
 {
-  let binding = schedule();
-  let mut s = binding.lock().unwrap();
-  s.add_task(name, cons::TaskDuration::Repeated(dur), f);
-}
-
-/// `cancel_task` cancels a previously registered task with the given `name`.
-///
-/// `name` is the string identifier of the task to be canceled.
-pub fn cancel_task(name: &str) {
-  let binding = schedule();
-  let mut s = binding.lock().unwrap();
-  s.cancel_task(name);
+  let inst = schedule();
+  inst
+    .schedule_task(name, log, cons::TaskDuration::Repeated(dur), f)
+    .await;
 }

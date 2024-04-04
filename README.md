@@ -22,9 +22,9 @@ Entry-Server is a robust, fully-equipped backend project in Rust that's ready fo
 
 - Web Framework: Axum
 
-- Database: PostgreSQL with SeaORM
+- Database: PostgreSQL with [SeaORM](https://github.com/SeaQL/sea-orm)
 
-- Cache: Redis with Fred
+- Cache: Redis with [Fred](https://github.com/aembke/fred.rs)
 
 
 ## How to *Run*
