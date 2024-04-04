@@ -4,4 +4,5 @@ pub mod prelude;
 
 pub mod activations;
 pub mod licenses;
+pub mod synchronize;
 pub mod users;
