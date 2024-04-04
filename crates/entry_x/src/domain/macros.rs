@@ -97,6 +97,19 @@ macro_rules! gen_mutation {
         Ok(ret)
       }
 
+      pub async fn update_by_column<V>(
+        conn: &sea_orm::DatabaseConnection,
+        column: $entity::Column,
+        v: V,
+        model: $entity::ActiveModel,
+      ) -> std::result::Result<$entity::Model, sea_orm::DbErr>
+      where
+        V: Into<sea_orm::Value>,
+      {
+        let ret = $entity::Entity::update(model).filter(column.eq(v)).exec(conn).await?;
+        Ok(ret)
+      }
+
       // Deletes a record based on the `model`
       //
       // Returns true if the deletion was successful, false if no records were deleted.

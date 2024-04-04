@@ -32,7 +32,7 @@ mod tests {
   async fn test_crud() {
     let db = init().await;
     let key = Uuid::new_v4().to_string();
-    let until = OffsetDateTime::now_utc().checked_add(Duration::days(365)).unwrap();
+    let until = util::current_ms() + Duration::days(365).whole_milliseconds() as u64;
     let v = Mutation::create(
       &db.conn,
       licenses::ActiveModel {
