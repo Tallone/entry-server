@@ -35,6 +35,9 @@ pub enum AppError {
   #[error("The provided client token is invalid or expired. Please check your credentials and try again.")]
   InvalidToken,
 
+  #[error("This user is in deactive state.")]
+  DeactivedUser,
+
   #[error(transparent)]
   OAuth(#[from] OAuthError),
 
@@ -60,6 +63,7 @@ impl AppError {
       AppError::ApiNotFound => 4404,
       AppError::LicenseNotValid => 4300,
       AppError::LicenseExpired => 4301,
+      AppError::DeactivedUser => 4600,
     }
   }
 

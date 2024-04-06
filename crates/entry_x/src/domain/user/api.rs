@@ -10,6 +10,7 @@ use crate::{
 };
 
 use super::{
+  cons::UserState,
   model::{CreateReq, GetReq, LoginReq, UpdatePasswdReq},
   service::{self, Mutation},
 };
@@ -42,6 +43,11 @@ pub async fn login(State(db): State<DB>, Json(payload): Json<LoginReq>) -> Resul
     // check password
     if util::argon2_verify(&payload.password, &hashed).is_err() {
       return Ok(ApiResponse::failed(anyhow!("Password is not matched").into()));
+    }
+
+    // check state
+    if UserState::Deactive as i16 == db.state {
+      return Ok(ApiResponse::failed(AppError::DeactivedUser));
     }
 
     // login success, return token

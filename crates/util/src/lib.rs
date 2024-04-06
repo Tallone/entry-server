@@ -66,6 +66,16 @@ mod tests {
   use super::*;
 
   #[test]
+  fn test_argon2_encrypt() {
+    let pwd = "122333";
+    // $argon2id$v=19$m=19456,t=2,p=1$Q2U0Ao1j+eweMK5JfxkIcA$g7NNa5w0H/Kqf7BCOzv4p9lYVKALPr2ZkREMJvJqPN8
+    let ret = argon2_encrypt(pwd).unwrap();
+
+    assert!(argon2_verify("122333", &ret).is_ok());
+    assert!(argon2_verify("122333", "$argon2id$v=19$m=19456,t=2,p=1$Q2U0Ao1j+eweMK5JfxkIcA$g7NNa5w0H/Kqf7BCOzv4p9lYVKALPr2ZkREMJvJqPN8").is_ok());
+  }
+
+  #[test]
   fn test_rand_uuid() {
     let v = rand_uuid();
     assert!(!v.is_empty());

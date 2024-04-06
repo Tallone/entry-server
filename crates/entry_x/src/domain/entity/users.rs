@@ -11,9 +11,10 @@ pub struct Model {
   pub name: Option<String>,
   #[sea_orm(column_type = "Text", unique)]
   pub email: String,
+  #[serde(skip_serializing)]
   #[sea_orm(column_type = "Text", nullable)]
   pub password: Option<String>,
-  pub status: i16,
+  pub state: i16,
   pub created_at: i64,
   pub updated_at: i64,
 }

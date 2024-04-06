@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS Users
     name       VARCHAR(20),
     email      TEXT UNIQUE NOT NULL,
     password   TEXT,
-    status     SMALLINT    NOT NULL DEFAULT 0,
+    state      SMALLINT    NOT NULL DEFAULT 0,
     created_at BIGINT      NOT NULL DEFAULT CURRENT_MS(),
     updated_at BIGINT      NOT NULL DEFAULT CURRENT_MS()
 );

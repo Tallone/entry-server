@@ -46,7 +46,7 @@ where
 impl IntoResponse for AppError {
   fn into_response(self) -> axum::response::Response {
     let resp: ApiResponse<()> = ApiResponse::failed(self);
-    info!("resp: {}", serde_json::to_string_pretty(&resp).unwrap());
+    info!("Response with error: {}", serde_json::to_string(&resp).unwrap());
     (StatusCode::OK, Json(resp)).into_response()
   }
 }
