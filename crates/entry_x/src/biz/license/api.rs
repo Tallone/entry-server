@@ -2,7 +2,7 @@ use axum::extract::{Path, State};
 
 use crate::{
   db::DB,
-  domain::{activation, entity::licenses},
+  biz::{activation, entity::licenses},
   error::AppError,
   middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
 };

@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! gen_query {
-  ($entity:ident) => {
+  ($entity:ident, $id:path) => {
     use crate::db::ColumnOrder;
     use sea_orm::{QueryOrder, QueryTrait};
     pub(crate) struct Query;
@@ -33,7 +33,7 @@ macro_rules! gen_query {
       where
         T: Into<<$entity::PrimaryKey as sea_orm::PrimaryKeyTrait>::ValueType>,
       {
-        Self::get(conn, $entity::Column::Id, id.into()).await
+        Self::get(conn, $id, id.into()).await
       }
 
       // Retrieves a list of records from the database
@@ -67,7 +67,7 @@ macro_rules! gen_query {
       {
         let ids: Vec<<$entity::PrimaryKey as sea_orm::PrimaryKeyTrait>::ValueType> =
           ids.into_iter().map(Into::into).collect();
-        Self::list_in(conn, $entity::Column::Id, ids, None).await
+        Self::list_in(conn, $id, ids, None).await
       }
     }
   };
@@ -81,24 +81,24 @@ macro_rules! gen_mutation {
 
     #[allow(dead_code)]
     impl Mutation {
-      pub async fn create(
-        conn: &sea_orm::DatabaseConnection,
+      pub async fn create<'a, C: ConnectionTrait>(
+        conn: &C,
         model: $entity::ActiveModel,
       ) -> std::result::Result<$entity::Model, sea_orm::DbErr> {
         let resp = model.insert(conn).await?;
         Ok(resp)
       }
 
-      pub async fn update(
-        conn: &sea_orm::DatabaseConnection,
+      pub async fn update<'a, C: ConnectionTrait>(
+        conn: &C,
         model: $entity::ActiveModel,
       ) -> std::result::Result<$entity::Model, sea_orm::DbErr> {
         let ret = $entity::Entity::update(model).exec(conn).await?;
         Ok(ret)
       }
 
-      pub async fn update_by_column<V>(
-        conn: &sea_orm::DatabaseConnection,
+      pub async fn update_by_column<'a, C: ConnectionTrait, V>(
+        conn: &C,
         column: $entity::Column,
         v: V,
         model: $entity::ActiveModel,
@@ -113,8 +113,8 @@ macro_rules! gen_mutation {
       // Deletes a record based on the `model`
       //
       // Returns true if the deletion was successful, false if no records were deleted.
-      pub async fn delete_one(
-        conn: &sea_orm::DatabaseConnection,
+      pub async fn delete_one<'a, C: ConnectionTrait>(
+        conn: &C,
         model: $entity::ActiveModel,
       ) -> std::result::Result<bool, sea_orm::DbErr> {
         let ret = $entity::Entity::delete(model).exec(conn).await?;
@@ -126,9 +126,9 @@ macro_rules! gen_mutation {
 
 #[macro_export]
 macro_rules! gen_crud {
-  ($entity:ident) => {
+  ($entity:ident, $id:path) => {
     use crate::{gen_mutation, gen_query};
-    gen_query!($entity);
+    gen_query!($entity, $id);
     gen_mutation!($entity);
   };
 }

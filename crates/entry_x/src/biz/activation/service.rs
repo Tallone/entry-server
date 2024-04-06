@@ -1,9 +1,9 @@
 use crate::{
-  domain::entity::activations::{self, Column},
+  biz::entity::activations::{self, Column},
   gen_crud,
 };
 
-gen_crud!(activations);
+gen_crud!(activations, activations::Column::Id);
 
 impl Query {
   pub async fn get_by_uid_lid(

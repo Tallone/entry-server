@@ -1,7 +1,7 @@
-use crate::domain::entity::licenses;
+use crate::biz::entity::licenses;
 use crate::gen_crud;
 
-gen_crud!(licenses);
+gen_crud!(licenses, licenses::Column::Id);
 
 #[cfg(test)]
 mod tests {

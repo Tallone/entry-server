@@ -1,7 +1,7 @@
 use crate::{
   cons,
   db::DB,
-  domain::{entity::users, user},
+  biz::{entity::users, user},
   error::AppError,
 };
 use axum::{

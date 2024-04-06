@@ -7,7 +7,7 @@ use axum::{
 use oauth_client::{consts::OAuthProvider, get_strategy, OAuthStrategy};
 use sea_orm::Set;
 
-use crate::{db::DB, domain::entity::users, error::AppError, middleware::response_wrapper::ApiResponse};
+use crate::{db::DB, biz::entity::users, error::AppError, middleware::response_wrapper::ApiResponse};
 
 use super::{
   cons::UserState,
@@ -47,7 +47,7 @@ pub(crate) async fn oauth_login(
         &db.conn,
         users::ActiveModel {
           email: Set(auth_user.email),
-          status: Set(UserState::Active as i16),
+          state: Set(UserState::Active as i16),
           name: Set(Some(auth_user.name)),
           ..Default::default()
         },

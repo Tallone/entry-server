@@ -13,7 +13,7 @@ use tower_http::cors::{Any, CorsLayer};
 mod conf;
 mod cons;
 mod db;
-mod domain;
+mod biz;
 mod error;
 mod logger;
 mod middleware;
@@ -41,7 +41,7 @@ async fn main() -> anyhow::Result<()> {
   let state = state::AppState { db };
   let cors = CorsLayer::new().allow_methods(Any).allow_origin(Any);
   let app = Router::new()
-    .nest("/api", domain::router())
+    .nest("/api", biz::router())
     .with_state(state)
     .fallback(middleware::response_wrapper::handle_404)
     .layer(

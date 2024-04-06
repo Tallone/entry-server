@@ -6,16 +6,14 @@ use util::{Expiration, KeysInterface};
 use uuid::Uuid;
 
 use crate::{
-  domain::{entity::users, Result},
-  gen_mutation, gen_query,
+  biz::{entity::users, Result}, gen_crud
 };
 
 use super::model::GetReq;
 
 const DEFAULT_CACHE_DURATION: Duration = Duration::from_secs(2 * 30 * 60);
 
-gen_mutation!(users);
-gen_query!(users);
+gen_crud!(users, users::Column::Id);
 
 impl Query {
   pub async fn get_opt(conn: &DatabaseConnection, opt: GetReq) -> Result<Option<users::Model>> {
