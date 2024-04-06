@@ -28,6 +28,11 @@ pub(crate) enum GetReq {
 }
 
 #[derive(Deserialize)]
+pub(crate) struct OAuthUrlParams {
+  pub redirect_url: String,
+}
+
+#[derive(Deserialize)]
 pub(crate) struct OAuthLoginReq {
   pub state: String,
   pub code: String,

@@ -11,19 +11,19 @@ use crate::{db::DB, domain::entity::users, error::AppError, middleware::response
 
 use super::{
   cons::UserState,
-  model::{GetReq, OAuthLoginReq},
+  model::{GetReq, OAuthLoginReq, OAuthUrlParams},
   service,
 };
 
 type Result<T> = std::result::Result<ApiResponse<T>, AppError>;
 
 /// Get `provider` authentication url
-/// 
+///
 /// When auth finished, browser will redirect to `redirect_url`
-pub(crate) async fn oauth_url(Path(provider): Path<String>, redirect_url: Query<String>) -> Result<String> {
+pub(crate) async fn oauth_url(Path(provider): Path<String>, Query(params): Query<OAuthUrlParams>) -> Result<String> {
   let provider = OAuthProvider::from_str(&provider)?;
   let strategy = get_strategy(provider);
-  let url = strategy.get_auth_url(&redirect_url).await?;
+  let url = strategy.get_auth_url(&params.redirect_url).await?;
   Ok(ApiResponse::ok(url.to_string()))
 }
 

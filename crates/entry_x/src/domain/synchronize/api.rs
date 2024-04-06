@@ -1,5 +1,4 @@
 use axum::{extract::State, Json};
-use sea_orm::Set;
 
 use crate::{
   db::DB,
@@ -12,10 +11,9 @@ use super::{model::SaveReq, service};
 
 type Result<T> = std::result::Result<ApiResponse<T>, AppError>;
 
-pub async fn save(user: LoginedUser, State(db): State<DB>, Json(payload): Json<SaveReq>) -> Result<bool> {
-
+pub async fn save(user: LoginedUser, State(db): State<DB>, Json(payload): Json<SaveReq>) -> Result<synchronize::Model> {
   let ret = service::save(&db.conn, user.0.id, payload.content).await?;
-  Ok(ApiResponse::ok(true))
+  Ok(ApiResponse::ok(ret))
 }
 
 pub async fn clear(user: LoginedUser, State(db): State<DB>) -> Result<bool> {
@@ -29,12 +27,7 @@ pub async fn current(user: LoginedUser, State(db): State<DB>) -> Result<synchron
   match service::get(&db.conn, user.0.id).await? {
     Some(v) => Ok(ApiResponse::ok(v)),
     None => {
-      let ret = service::save(
-        &db.conn,
-        user.0.id,
-        String::default(),
-      )
-      .await?;
+      let ret = service::save(&db.conn, user.0.id, String::default()).await?;
       Ok(ApiResponse::ok(ret))
     }
   }

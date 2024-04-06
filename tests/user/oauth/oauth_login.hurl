@@ -1,7 +1,7 @@
 POST http://localhost:3000/api/v1/user/oauth/github
 {
-  "state": "a8498a70-86ef-4088-bbc0-558e7f826306",
-  "code": "7ff9a54c22b0670ab73b"
+  "state": "21784311-fa9a-47d2-bcdd-3bfa30384f62",
+  "code": "941708fdc2d6e558683b"
 }
 HTTP 200
 [Asserts]

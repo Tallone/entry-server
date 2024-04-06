@@ -105,7 +105,7 @@ impl OAuthStrategy for GithubOAuthStrategy {
     }
 
     Err(OAuthError::Other(anyhow!(
-      "Maybe the code passed is incorrect or expired.",
+      response.to_string(),
     )))
   }
 

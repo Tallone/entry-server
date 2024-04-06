@@ -1,5 +1,6 @@
 use sea_orm::{
-  sea_query::{Alias, Expr, OnConflict}, ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, Iden, QueryFilter, Set, Statement
+  sea_query::{Alias, Expr, OnConflict},
+  ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, Iden, QueryFilter, Set,
 };
 use uuid::Uuid;
 
@@ -28,7 +29,15 @@ pub async fn save<'a, C: ConnectionTrait>(conn: &C, user_id: Uuid, content: Stri
     .on_conflict(
       OnConflict::column(Column::UserId)
         .value(Column::Content, Expr::val(content))
-        .value(Column::Version, Expr::custom_keyword(Alias::new(format!("{}.{}", Column::Version.entity_name().to_string(), Column::Version.to_string()))).add(1))
+        .value(
+          Column::Version,
+          Expr::custom_keyword(Alias::new(format!(
+            "{}.{}",
+            Column::Version.entity_name().to_string(),
+            Column::Version.to_string()
+          )))
+          .add(1),
+        )
         .to_owned(),
     )
     .exec_with_returning(conn)
@@ -56,7 +65,7 @@ mod tests {
   use dotenvy::dotenv;
   use log::info;
   use sea_orm::TransactionTrait;
-use serde_json::json;
+  use serde_json::json;
   use uuid::Uuid;
 
   use crate::{conf::ApplicationConf, db::DB};

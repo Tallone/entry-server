@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use anyhow::Ok;
-use axum::Router;
+use axum::{Router};
 use conf::ApplicationConf;
 use db::DB;
 use dotenvy::dotenv;
@@ -33,7 +33,7 @@ async fn main() -> anyhow::Result<()> {
   let db = DB::new(&conf).await?;
 
   // The shutdown channel
-  let (tx, mut rx) = broadcast::channel::<()>(8);
+  let (_, rx) = broadcast::channel::<()>(8);
 
   // Start task system
   task::start_tick(Duration::from_millis(100), rx);
@@ -47,7 +47,7 @@ async fn main() -> anyhow::Result<()> {
     .layer(
       ServiceBuilder::new()
         .layer(cors)
-        .layer(axum::middleware::from_fn(middleware::request_trace::layer)),
+        .layer(axum::middleware::from_fn(middleware::request_trace::layer))
     );
 
   let listener = tokio::net::TcpListener::bind(&conf.server.addr).await?;
