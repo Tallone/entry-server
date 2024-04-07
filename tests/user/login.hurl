@@ -1,6 +1,6 @@
 POST http://localhost:3000/api/v1/user/login
 {
-    "email": "tallone.shi@outlook.com",
+    "email": "entry_x@entry.com",
     "password": "122333"
 }
 HTTP 200

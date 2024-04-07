@@ -3,7 +3,6 @@ use std::time::SystemTime;
 use anyhow::anyhow;
 use argon2::{password_hash::SaltString, Argon2};
 use argon2::{PasswordHash, PasswordHasher, PasswordVerifier};
-use base64ct::{Base64, Encoding};
 pub use fred::prelude::*;
 pub mod cache;
 pub mod http;
@@ -21,11 +20,13 @@ pub fn rand_uuid() -> String {
   Uuid::new_v4().to_string()
 }
 
-/// Generate a random `len` string
+/// Generate a random `len` string.
+///
+/// Max `len` is 64
 pub fn rand_str(len: usize) -> String {
   let seed = rand_uuid();
   let hash = Sha256::new().chain_update(seed).finalize();
-  Base64::encode_string(&hash).chars().take(len).collect()
+  format!("{:x}", hash).chars().take(len).collect()
 }
 
 /// Get current timestamp in milliseconds
@@ -72,7 +73,11 @@ mod tests {
     let ret = argon2_encrypt(pwd).unwrap();
 
     assert!(argon2_verify("122333", &ret).is_ok());
-    assert!(argon2_verify("122333", "$argon2id$v=19$m=19456,t=2,p=1$Q2U0Ao1j+eweMK5JfxkIcA$g7NNa5w0H/Kqf7BCOzv4p9lYVKALPr2ZkREMJvJqPN8").is_ok());
+    assert!(argon2_verify(
+      "122333",
+      "$argon2id$v=19$m=19456,t=2,p=1$Q2U0Ao1j+eweMK5JfxkIcA$g7NNa5w0H/Kqf7BCOzv4p9lYVKALPr2ZkREMJvJqPN8"
+    )
+    .is_ok());
   }
 
   #[test]
@@ -83,6 +88,8 @@ mod tests {
 
   #[test]
   fn test_rand_str() {
-    assert_eq!(rand_str(10).len(), 10);
+    let str = rand_str(48);
+    println!("{str}");
+    assert_eq!(str.len(), 48);
   }
 }

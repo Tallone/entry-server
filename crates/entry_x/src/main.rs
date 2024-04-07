@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 
 use anyhow::Ok;
 use axum::Router;
@@ -48,6 +48,6 @@ async fn main() -> anyhow::Result<()> {
 
   let listener = tokio::net::TcpListener::bind(&conf.server.addr).await?;
   info!("listening on {}", listener.local_addr().unwrap());
-  axum::serve(listener, app).await?;
+  axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await?;
   Ok(())
 }

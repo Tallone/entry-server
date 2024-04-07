@@ -10,10 +10,10 @@ pub struct Model {
   pub id: i32,
   #[sea_orm(column_type = "Text", unique)]
   pub key: String,
-  pub expired_at: i64,
+  pub expired_at: Option<i64>,
   pub created_at: i64,
   pub updated_at: i64,
-  pub is_active: bool,
+  pub is_used: bool,
   pub duration: i64,
 }
 

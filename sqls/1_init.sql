@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS licenses (
     id SERIAL PRIMARY KEY,
     key TEXT UNIQUE NOT NULL,
-    is_active BOOLEAN NOT NULL DEFAULT false,
-    expired_at BIGINT NOT NULL,
+    is_used BOOLEAN NOT NULL DEFAULT false,
+    expired_at BIGINT,
     created_at BIGINT NOT NULL DEFAULT CURRENT_MS(),
     updated_at BIGINT NOT NULL DEFAULT CURRENT_MS()
 );

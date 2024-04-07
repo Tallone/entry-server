@@ -12,7 +12,7 @@ use crate::{
 
 use super::model::GetReq;
 
-const DEFAULT_CACHE_DURATION: Duration = Duration::from_secs(2 * 30 * 60);
+const TOKEN_VALID_DURATION: Duration = Duration::from_secs(30 * 24 * 60 * 60);
 
 gen_crud!(users, users::Column::Id);
 
@@ -46,7 +46,7 @@ pub async fn get_user(id: &str, conn: &DatabaseConnection) -> Result<Option<user
       .set(
         &key,
         &data,
-        Some(Expiration::EX(DEFAULT_CACHE_DURATION.as_secs() as i64)),
+        Some(Expiration::EX(TOKEN_VALID_DURATION.as_secs() as i64)),
         None,
         false,
       )
@@ -61,14 +61,14 @@ const TOKEN_CACHE_PREFIX: &str = "TOKEN_";
 
 /// Generate a token for user `id` and store it in cache
 pub async fn create_token(id: &str) -> Result<String> {
-  let token = util::rand_str(64);
+  let token = util::rand_str(32);
   let key = format!("{}{}", TOKEN_CACHE_PREFIX, token);
   let redis = util::cache::redis().await;
   redis
     .set(
       &key,
       id,
-      Some(Expiration::EX(DEFAULT_CACHE_DURATION.as_secs() as i64)),
+      Some(Expiration::EX(TOKEN_VALID_DURATION.as_secs() as i64)),
       None,
       false,
     )
