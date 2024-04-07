@@ -29,7 +29,7 @@ pub async fn layer(req: Request, next: Next) -> Result<impl IntoResponse, ApiRes
     .headers
     .get(CONTENT_TYPE)
     .map_or(false, |v| v.to_str().unwrap_or_default().starts_with("multipart"));
-  let should_print_body = !is_multipart_request && parts.method == Method::POST;
+  let should_print_body = !is_multipart_request && parts.method != Method::GET;
 
   let body_string: String = match should_print_body {
     false => "".into(),
