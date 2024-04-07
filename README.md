@@ -20,7 +20,7 @@ Entry-Server is a robust, fully-equipped backend project in Rust that's ready fo
 
 - Development Language: Rust
 
-- Web Framework: Axum
+- Web Framework: [Axum](https://github.com/tokio-rs/axum)
 
 - Database: PostgreSQL with [SeaORM](https://github.com/SeaQL/sea-orm)
 
