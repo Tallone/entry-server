@@ -6,7 +6,7 @@ use crate::{
 gen_crud!(activations, activations::Column::Id);
 
 impl Query {
-  pub async fn get_by_uid_lid(
+  pub async fn get_by_uid_lk(
     conn: &DatabaseConnection,
     uid: Uuid,
     license_key: &str,

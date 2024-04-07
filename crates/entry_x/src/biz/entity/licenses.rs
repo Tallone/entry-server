@@ -10,7 +10,7 @@ pub struct Model {
   pub id: i32,
   #[sea_orm(column_type = "Text", unique)]
   pub key: String,
-  pub status: i16,
+  pub used: bool,
   pub valid_until: u64,
   pub created_at: u64,
   pub updated_at: u64,

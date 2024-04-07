@@ -7,7 +7,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create the Users table
-CREATE TABLE IF NOT EXISTS Users
+CREATE TABLE IF NOT EXISTS users
 (
     id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
     name       VARCHAR(20),
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS licenses
 (
     id          SERIAL PRIMARY KEY,
     key         TEXT UNIQUE NOT NULL,
-    status      SMALLINT    NOT NULL,
+    used        BOOLEAN     NOT NULL DEFAULT false,
     valid_until BIGINT      NOT NULL,
     created_at  BIGINT      NOT NULL DEFAULT CURRENT_MS(),
     updated_at  BIGINT      NOT NULL DEFAULT CURRENT_MS()
@@ -37,9 +37,8 @@ CREATE TABLE IF NOT EXISTS activations
     user_id         UUID   NOT NULL,
     device_id       TEXT,
     ip_address      TEXT   NOT NULL,
-    activation_date BIGINT NOT NULL,
     created_at      BIGINT NOT NULL DEFAULT CURRENT_MS()
-);;
+);
 CREATE INDEX idx_uid_lid ON activations (user_id, license_key);
 
 CREATE TABLE IF NOT EXISTS synchronize

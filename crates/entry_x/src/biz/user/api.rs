@@ -3,8 +3,8 @@ use axum::{extract::State, Json};
 use sea_orm::{ActiveValue::*, Set};
 
 use crate::{
-  db::DB,
   biz::entity::users,
+  db::DB,
   error::AppError,
   middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
 };
@@ -31,7 +31,7 @@ pub async fn create(State(db): State<DB>, Json(payload): Json<CreateReq>) -> Res
   };
 
   let ret = Mutation::create(&db.conn, act_model).await?;
-  Ok(ApiResponse::ok(ret))
+  ApiResponse::ok(ret)
 }
 
 /// Logging in with password and return token
@@ -42,25 +42,25 @@ pub async fn login(State(db): State<DB>, Json(payload): Json<LoginReq>) -> Resul
 
     // check password
     if util::argon2_verify(&payload.password, &hashed).is_err() {
-      return Ok(ApiResponse::failed(anyhow!("Password is not matched").into()));
+      return Err(anyhow!("Password is not matched").into());
     }
 
     // check state
     if UserState::Deactive as i16 == db.state {
-      return Ok(ApiResponse::failed(AppError::DeactivedUser));
+      return Err(AppError::DeactivedUser);
     }
 
     // login success, return token
     let token = service::create_token(&db.id.to_string()).await?;
-    return Ok(ApiResponse::ok(token));
+    return ApiResponse::ok(token);
   }
 
-  Ok(ApiResponse::failed(AppError::ResourceNotExist))
+  Err(AppError::ResourceNotExist)
 }
 
 /// Get current login user info
 pub async fn current(user: LoginedUser) -> Result<users::Model> {
-  Ok(ApiResponse::ok(user.0))
+  ApiResponse::ok(user.0)
 }
 
 /// Update current login user Password
@@ -86,5 +86,5 @@ pub async fn update_password(
     },
   )
   .await?;
-  Ok(ApiResponse::ok(()))
+  ApiResponse::ok(())
 }

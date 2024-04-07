@@ -37,7 +37,6 @@ mod tests {
       &db.conn,
       licenses::ActiveModel {
         key: Set(key),
-        status: Set(0),
         valid_until: Set(until),
         ..Default::default()
       },
@@ -55,13 +54,11 @@ mod tests {
       &db.conn,
       licenses::ActiveModel {
         id: Set(id),
-        status: Set(1),
         ..Default::default()
       },
     )
     .await
     .unwrap();
-    assert_eq!(v.status, 1);
     let r = Mutation::delete_one(
       &db.conn,
       licenses::ActiveModel {
