@@ -1,6 +1,6 @@
 use sea_orm::{
   sea_query::{Alias, Expr, OnConflict},
-  ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, Iden, QueryFilter, Set,
+  ColumnTrait, ConnectionTrait, EntityTrait, Iden, QueryFilter, Set,
 };
 use uuid::Uuid;
 
@@ -43,7 +43,7 @@ impl Mutation {
     Ok(ret)
   }
 
-  pub async fn clear(conn: &DatabaseConnection, user_id: Uuid) -> Result<bool> {
+  pub async fn clear<'a, C: ConnectionTrait>(conn: &C, user_id: Uuid) -> Result<bool> {
     let ret = synchronize::Entity::update_many()
       .set(synchronize::ActiveModel {
         content: Set(String::default()),
@@ -60,13 +60,13 @@ impl Mutation {
 
 #[cfg(test)]
 mod tests {
+  use crate::internal::{conf::ApplicationConf, db::DB};
+
   use super::*;
   use dotenvy::dotenv;
   use sea_orm::TransactionTrait;
   use serde_json::json;
   use uuid::Uuid;
-
-  use crate::{conf::ApplicationConf, db::DB};
 
   async fn init() -> DB {
     dotenv().expect(".env file not found");

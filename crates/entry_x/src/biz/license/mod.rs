@@ -1,9 +1,8 @@
 use axum::{routing::get, Router};
 
-use crate::state::AppState;
+use crate::internal::app_state::AppState;
 
 mod api;
-mod cons;
 mod model;
 pub(crate) mod service;
 

@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! gen_query {
   ($entity:ident, $id:path) => {
-    use crate::db::ColumnOrder;
+    use crate::internal::db::ColumnOrder;
     use sea_orm::{QueryOrder, QueryTrait};
     pub(crate) struct Query;
 

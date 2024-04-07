@@ -1,8 +1,7 @@
 use crate::{
-  cons,
-  db::DB,
   biz::{entity::users, user},
-  error::AppError,
+  cons,
+  internal::{db::DB, error::AppError},
 };
 use axum::{
   async_trait,

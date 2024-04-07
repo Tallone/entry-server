@@ -1,6 +1,6 @@
 use axum::extract::FromRef;
 
-use crate::db::DB;
+use super::db::DB;
 
 #[derive(Clone)]
 pub struct AppState {

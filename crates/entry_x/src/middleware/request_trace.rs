@@ -11,7 +11,9 @@ use serde_json::Value;
 use time::Instant;
 use uuid::Uuid;
 
-use crate::{cons, error::AppError, middleware::response_wrapper::ApiResponse};
+use crate::{cons, internal::error::AppError};
+
+use super::response_wrapper::ApiResponse;
 
 /// This middleware generate a [`HEADER_REQUEST_ID`] to headers,
 /// And will logging request body if the request content type is json.
@@ -37,10 +39,10 @@ pub async fn layer(req: Request, next: Next) -> Result<impl IntoResponse, ApiRes
         .await
         .map_err(|e| {
           warn!("Collect request body failed {}", e);
-          ApiResponse::failed(AppError::RequestNotValid)
+          AppError::RequestNotValid
         })?
         .to_bytes();
-      let val: Value = serde_json::from_slice(&bytes).map_err(|_| ApiResponse::failed(AppError::RequestNotValid))?;
+      let val: Value = serde_json::from_slice(&bytes).map_err(|_| AppError::RequestNotValid)?;
       val.to_string()
     }
   };

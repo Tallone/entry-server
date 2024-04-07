@@ -1,7 +1,7 @@
 use sea_orm::{ColumnTrait, ConnectOptions, Database, DatabaseConnection, Order};
 use std::time::Duration;
 
-use crate::{conf::ApplicationConf, error::AppError};
+use super::{conf::ApplicationConf, error::AppError};
 
 pub struct ColumnOrder<T: ColumnTrait> {
   pub column: T,

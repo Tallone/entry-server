@@ -1,23 +1,19 @@
 use std::time::Duration;
 
 use anyhow::Ok;
-use axum::{Router};
-use conf::ApplicationConf;
-use db::DB;
+use axum::Router;
 use dotenvy::dotenv;
 use log::info;
 use tokio::sync::broadcast;
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
 
-mod conf;
-mod cons;
-mod db;
+use crate::internal::{app_state::AppState, conf::ApplicationConf, db::DB, logger};
+
 mod biz;
-mod error;
-mod logger;
+mod cons;
+mod internal;
 mod middleware;
-mod state;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -38,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
   // Start task system
   task::start_tick(Duration::from_millis(100), rx);
 
-  let state = state::AppState { db };
+  let state = AppState { db };
   let cors = CorsLayer::new().allow_methods(Any).allow_origin(Any);
   let app = Router::new()
     .nest("/api", biz::router())
@@ -47,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
     .layer(
       ServiceBuilder::new()
         .layer(cors)
-        .layer(axum::middleware::from_fn(middleware::request_trace::layer))
+        .layer(axum::middleware::from_fn(middleware::request_trace::layer)),
     );
 
   let listener = tokio::net::TcpListener::bind(&conf.server.addr).await?;

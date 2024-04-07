@@ -6,7 +6,8 @@ use util::{Expiration, KeysInterface};
 use uuid::Uuid;
 
 use crate::{
-  biz::{entity::users, Result}, gen_crud
+  biz::{entity::users, Result},
+  gen_crud,
 };
 
 use super::model::GetReq;
@@ -91,7 +92,7 @@ mod tests {
   use dotenvy::dotenv;
   use log::info;
 
-  use crate::{conf::ApplicationConf, db::DB};
+  use crate::internal::{conf::ApplicationConf, db::DB};
 
   async fn init() -> DB {
     dotenv().expect(".env file not found");

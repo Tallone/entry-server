@@ -10,10 +10,11 @@ pub struct Model {
   pub id: i32,
   #[sea_orm(column_type = "Text", unique)]
   pub key: String,
-  pub used: bool,
-  pub valid_until: u64,
-  pub created_at: u64,
-  pub updated_at: u64,
+  pub expired_at: i64,
+  pub created_at: i64,
+  pub updated_at: i64,
+  pub is_active: bool,
+  pub duration: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

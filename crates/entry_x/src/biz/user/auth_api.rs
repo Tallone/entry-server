@@ -7,7 +7,11 @@ use axum::{
 use oauth_client::{consts::OAuthProvider, get_strategy, OAuthStrategy};
 use sea_orm::Set;
 
-use crate::{db::DB, biz::entity::users, error::AppError, middleware::response_wrapper::ApiResponse};
+use crate::{
+  biz::entity::users,
+  internal::{db::DB, error::AppError},
+  middleware::response_wrapper::ApiResponse,
+};
 
 use super::{
   cons::UserState,
@@ -24,7 +28,7 @@ pub(crate) async fn oauth_url(Path(provider): Path<String>, Query(params): Query
   let provider = OAuthProvider::from_str(&provider)?;
   let strategy = get_strategy(provider);
   let url = strategy.get_auth_url(&params.redirect_url).await?;
-  Ok(ApiResponse::ok(url.to_string()))
+  ApiResponse::ok(url.to_string())
 }
 
 /// Perform OAuth login with `provider` code and state.
@@ -59,5 +63,5 @@ pub(crate) async fn oauth_login(
 
   let token = service::create_token(&record.id.to_string()).await?;
 
-  Ok(ApiResponse::ok(token))
+  ApiResponse::ok(token)
 }

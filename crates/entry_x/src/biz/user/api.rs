@@ -4,8 +4,7 @@ use sea_orm::{ActiveValue::*, Set};
 
 use crate::{
   biz::entity::users,
-  db::DB,
-  error::AppError,
+  internal::{db::DB, error::AppError},
   middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
 };
 

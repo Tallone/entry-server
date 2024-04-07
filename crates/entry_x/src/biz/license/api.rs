@@ -1,15 +1,14 @@
-use std::net::SocketAddr;
+use std::{net::SocketAddr, time::Duration};
 
 use axum::extract::{ConnectInfo, Path, State};
-use sea_orm::{ActiveValue::NotSet, Set, TransactionTrait};
+use sea_orm::{Set, TransactionTrait};
 
 use crate::{
   biz::{
     activation,
     entity::{activations, licenses},
   },
-  db::DB,
-  error::AppError,
+  internal::{db::DB, error::AppError},
   middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
 };
 
@@ -46,19 +45,19 @@ pub async fn active(
   let record = service::Query::get(&db.conn, licenses::Column::Key, &payload.license_key)
     .await?
     .ok_or(AppError::ResourceNotExist)?;
-  if record.used {
+  if !record.is_active {
     return Err(AppError::LicenseNotValid);
   }
 
   let trans = db.conn.begin().await?;
 
+  let expired_at = util::current_ms() + Duration::from_secs(record.duration as u64).as_millis() as u64;
   let act_mod = licenses::ActiveModel {
     id: Set(record.id),
-    used: Set(true),
-    valid_until: NotSet,
+    is_active: Set(false),
+    expired_at: Set(expired_at as i64),
     ..Default::default()
   };
-  // TODO: License time
 
   let ret: licenses::Model = service::Mutation::update(&trans, act_mod).await?;
 

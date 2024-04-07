@@ -3,7 +3,7 @@ use axum::{
   Router,
 };
 
-use crate::state::AppState;
+use crate::internal::app_state::AppState;
 
 mod api;
 mod auth_api;

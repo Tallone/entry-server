@@ -1,7 +1,7 @@
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use log::info;
 
-use crate::{biz::Result, error::AppError};
+use crate::internal::error::AppError;
 
 // API response structure
 #[derive(serde::Serialize)]
@@ -15,7 +15,7 @@ impl<T> ApiResponse<T>
 where
   T: serde::Serialize,
 {
-  pub fn ok(data: T) -> Result<Self> {
+  pub fn ok(data: T) -> Result<Self, AppError> {
     Ok(Self {
       code: 0,
       message: "ok".into(),

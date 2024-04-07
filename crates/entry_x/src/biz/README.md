@@ -4,5 +4,5 @@ Command：
 
 ```shell
 
-sea generate entity -o crates/entry_x/src/domain/entity --with-serde=both --serde-skip-hidden-column --date-time-crate=time
+sea generate entity -o crates/entry_x/src/biz/entity --with-serde=both --serde-skip-hidden-column --date-time-crate=time
 ```

@@ -2,8 +2,7 @@ use axum::{extract::State, Json};
 
 use crate::{
   biz::entity::synchronize,
-  db::DB,
-  error::AppError,
+  internal::{db::DB, error::AppError},
   middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
 };
 

@@ -23,11 +23,13 @@ impl ApplicationConf {
   pub fn from_env() -> Self {
     Self {
       db: DatabaseConf {
-        url: std::env::var(cons::ENV_DATABASE_URL).expect(format!("Envirement {} is not valid", cons::ENV_DATABASE_URL).as_str()),
+        url: std::env::var(cons::ENV_DATABASE_URL)
+          .expect(format!("Envirement {} is not valid", cons::ENV_DATABASE_URL).as_str()),
       },
       server: ServerConf {
-        addr: std::env::var(cons::ENV_SERVER_ADDR).expect(format!("Envirement {} is not valid", cons::ENV_SERVER_ADDR).as_str()),
-      }
+        addr: std::env::var(cons::ENV_SERVER_ADDR)
+          .expect(format!("Envirement {} is not valid", cons::ENV_SERVER_ADDR).as_str()),
+      },
     }
   }
 }
@@ -39,4 +41,3 @@ impl Default for ServerConf {
     }
   }
 }
-

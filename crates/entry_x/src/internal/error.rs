@@ -23,9 +23,6 @@ pub enum AppError {
   #[error("Redis Error: {0}")]
   Redis(#[from] RedisError),
 
-  #[error("Unhandled internal error")]
-  Unknown,
-
   #[error("Request is not valid")]
   RequestNotValid,
 
@@ -43,15 +40,11 @@ pub enum AppError {
 
   #[error("This license is not valid")]
   LicenseNotValid,
-
-  #[error("This license has expired")]
-  LicenseExpired,
 }
 
 impl AppError {
   pub fn code(&self) -> u32 {
     match self {
-      AppError::Unknown => 9999,
       AppError::Biz(_) => 8000,
       AppError::IO(_) => 1500,
       AppError::Db(_) => 1510,
@@ -62,7 +55,6 @@ impl AppError {
       AppError::InvalidToken => 4403,
       AppError::ApiNotFound => 4404,
       AppError::LicenseNotValid => 4300,
-      AppError::LicenseExpired => 4301,
       AppError::DeactivedUser => 4600,
     }
   }

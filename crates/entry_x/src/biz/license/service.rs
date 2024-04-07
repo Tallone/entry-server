@@ -5,17 +5,14 @@ gen_crud!(licenses, licenses::Column::Id);
 
 #[cfg(test)]
 mod tests {
+  use crate::internal::{conf::ApplicationConf, db::DB};
+
   use super::*;
   use dotenvy::dotenv;
   use log::info;
   use sea_orm::{Order, Set};
   use time::{Duration, OffsetDateTime};
   use uuid::Uuid;
-
-  use crate::{
-    conf::ApplicationConf,
-    db::{ColumnOrder, DB},
-  };
 
   async fn init() -> DB {
     dotenv().expect(".env file not found");
@@ -37,7 +34,7 @@ mod tests {
       &db.conn,
       licenses::ActiveModel {
         key: Set(key),
-        valid_until: Set(until),
+        expired_at: Set(until as i64),
         ..Default::default()
       },
     )
@@ -90,5 +87,10 @@ mod tests {
     .await
     .unwrap();
     info!("data: {:?}", data);
+  }
+
+  #[test]
+  fn test() {
+    println!("{}", Duration::days(1).whole_seconds());
   }
 }

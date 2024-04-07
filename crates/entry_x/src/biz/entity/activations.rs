@@ -15,7 +15,6 @@ pub struct Model {
   pub device_id: Option<String>,
   #[sea_orm(column_type = "Text")]
   pub ip_address: String,
-  pub activation_date: i64,
   pub created_at: i64,
 }
 
