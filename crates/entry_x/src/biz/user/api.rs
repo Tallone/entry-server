@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use axum::{extract::State, Json};
-use sea_orm::{ActiveValue::*, Set};
+use sea_orm::{ActiveValue::*, DbErr, RuntimeErr, Set};
 
 use crate::{
   biz::entity::users,
@@ -29,7 +29,12 @@ pub async fn create(State(db): State<DB>, Json(payload): Json<CreateReq>) -> Res
     ..Default::default()
   };
 
-  let ret = Mutation::create(&db.conn, act_model).await?;
+  let ret = Mutation::create(&db.conn, act_model).await.map_err(|e| {
+    if e.to_string().contains("duplicate key") {
+      return AppError::EmailExist;
+    }
+    e.into()
+  })?;
   ApiResponse::ok(ret)
 }
 

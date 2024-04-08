@@ -34,7 +34,7 @@ mod tests {
       &db.conn,
       licenses::ActiveModel {
         key: Set(key),
-        expired_at: Set(until as i64),
+        expired_at: Set(Some(until as i64)),
         ..Default::default()
       },
     )
