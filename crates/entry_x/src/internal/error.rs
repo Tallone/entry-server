@@ -35,6 +35,9 @@ pub enum AppError {
   #[error("This user is in deactive state.")]
   DeactivedUser,
 
+  #[error("This email is already in used.")]
+  EmailExist,
+
   #[error(transparent)]
   OAuth(#[from] OAuthError),
 
@@ -56,6 +59,7 @@ impl AppError {
       AppError::ApiNotFound => 4404,
       AppError::LicenseNotValid => 4300,
       AppError::DeactivedUser => 4600,
+      AppError::EmailExist => 4601,
     }
   }
 
