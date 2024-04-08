@@ -1,13 +1,5 @@
-### We Using [HURL](https://hurl.dev/docs/installation.html) to test Entry server api.
 
-Most APIs require a token, so you need to first obtain the token and then use `--variable token=token` to pass the variable.
+### Why doesn't Axum have a good documentation generation tool? 
+I wish there was a command like `cargo doc` that could generate documentation non-invasively without code, but I haven't found a similar tool yet. So I'm manually maintaining all the APIs through ApiDog (thanks for the free plan), which can be viewed online through this [link](https://entry-server.apidog.io/).
 
-```Shell
-
-hurl --error-format=long --variable token=token xxx.hurl
-```
-
-## Make a token
-
-1. using `create.hurl` create a new user
-2. using `login.hurl` to login and get a token
+https://entry-server.apidog.io/
