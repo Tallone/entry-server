@@ -16,6 +16,10 @@ Entry-Server is a robust, fully-equipped backend project in Rust that's ready fo
 - Designed for easy extension, allowing you to concentrate on developing your unique business logic
 - Simple deployment, with Docker Compose offering a one-click startup solution
 
+## **API Documents**
+
+[see here](tests/README.md)
+
 ## **Technology Stack**
 
 - Development Language: [Rust](https://www.rust-lang.org/)

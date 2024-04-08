@@ -16,6 +16,10 @@ Entry-Server 是一个强大、完备的 Rust 后端项目，可直接使用。�
 - 为便于扩展而设计，让您可以专注于开发独特的业务逻辑
 - 简单部署，Docker Compose 提供一键启动解决方案
 
+## **接口文档**
+
+[看这里](tests/README.md)
+
 ## **技术堆栈**
 
 - 开发语言：[Rust](https://www.rust-lang.org/)
