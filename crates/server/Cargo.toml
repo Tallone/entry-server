@@ -41,5 +41,9 @@ tower = "0.4.13"
 uuid.workspace = true
 
 axum-macros = "0.4.1"
-tower-http = { version = "0.5.2", features = ["cors"] }
+tower-http = { version = "0.5.2", features = [
+  "cors",
+  "set-header",
+  "propagate-header",
+] }
 http-body-util = "0.1.1"

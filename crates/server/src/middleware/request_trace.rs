@@ -1,7 +1,7 @@
 use axum::{
   body::Body,
   extract::Request,
-  http::{header::CONTENT_TYPE, HeaderValue, Method},
+  http::{header::CONTENT_TYPE, Method},
   middleware::Next,
   response::IntoResponse,
 };
@@ -9,7 +9,6 @@ use http_body_util::BodyExt;
 use log::{info, warn};
 use serde_json::Value;
 use time::Instant;
-use uuid::Uuid;
 
 use crate::{cons, internal::error::AppError};
 
@@ -19,11 +18,14 @@ use super::response_wrapper::ApiResponse;
 /// And will logging request body if the request content type is json.
 pub async fn layer(req: Request, next: Next) -> Result<impl IntoResponse, ApiResponse<()>> {
   let start = Instant::now();
-  let req_id = Uuid::new_v4().to_string();
-  let (mut parts, body) = req.into_parts();
-  parts
+  let (parts, body) = req.into_parts();
+  let req_id: String = parts
     .headers
-    .insert(cons::HEADER_REQUEST_ID, HeaderValue::from_str(&req_id).unwrap());
+    .get(cons::HEADER_REQUEST_ID)
+    .ok_or(AppError::RequestNotValid)?
+    .to_str()
+    .map_err(|_| AppError::RequestNotValid)?
+    .to_owned();
 
   let is_multipart_request = parts
     .headers

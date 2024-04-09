@@ -1,12 +1,20 @@
 use std::{net::SocketAddr, time::Duration};
 
 use anyhow::Ok;
-use axum::Router;
+use axum::{
+  http::{HeaderName, HeaderValue},
+  Router,
+};
 use dotenvy::dotenv;
 use log::info;
 use tokio::sync::broadcast;
 use tower::ServiceBuilder;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{
+  cors::{Any, CorsLayer},
+  propagate_header::PropagateHeaderLayer,
+  set_header::SetRequestHeaderLayer,
+};
+use uuid::Uuid;
 
 use crate::internal::{app_state::AppState, conf::ApplicationConf, db::DB, logger};
 
@@ -43,6 +51,13 @@ async fn main() -> anyhow::Result<()> {
     .layer(
       ServiceBuilder::new()
         .layer(cors)
+        .layer(SetRequestHeaderLayer::if_not_present(
+          cons::HEADER_REQUEST_ID.try_into().unwrap(),
+          HeaderValue::from_str(&Uuid::new_v4().to_string()).unwrap(),
+        ))
+        .layer(PropagateHeaderLayer::new(HeaderName::from_static(
+          cons::HEADER_REQUEST_ID,
+        )))
         .layer(axum::middleware::from_fn(middleware::request_trace::layer)),
     );
 
