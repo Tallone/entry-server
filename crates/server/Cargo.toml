@@ -1,9 +1,13 @@
 [package]
 
-name = "entry_x"
+name = "server"
 version.workspace = true
 edition.workspace = true
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "entry-server"
+path = "src/main.rs"
+doc = false
 
 [dependencies]
 anyhow.workspace = true

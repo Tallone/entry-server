@@ -15,7 +15,7 @@ static INSTANCE: OnceCell<RedisPool> = OnceCell::const_new();
 pub async fn redis() -> RedisPool {
   INSTANCE
     .get_or_init(|| async {
-      let url = env::var(ENV_REDIS_URL).expect(format!("Missing environment {}", ENV_REDIS_URL).as_str());
+      let url = env::var(ENV_REDIS_URL).unwrap_or_else(|_| panic!("Missing environment {}", ENV_REDIS_URL));
       let config = RedisConfig::from_url(&url).unwrap();
       let reconnect = ReconnectPolicy::new_constant(5, 3000);
       let pool = RedisPool::new(config, None, None, Some(reconnect), POOL_SIZE).unwrap();
