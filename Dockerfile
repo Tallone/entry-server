@@ -1,4 +1,4 @@
-FROM rust:slim-bullseye AS build
+FROM rust:1.77-slim-bullseye AS build
 
 RUN apt-get update
 RUN apt-get install -y build-essential clang
@@ -14,14 +14,15 @@ WORKDIR /app
 COPY . /app
 
 RUN cargo clean && cargo build --release
-RUN strip ./target/release/sonic
+RUN strip ./target/release/entry-server
 
-FROM gcr.io/distroless/cc
 
-WORKDIR /usr/src/sonic
+FROM alpine:latest
 
-COPY --from=build /app/target/release/sonic /usr/local/bin/sonic
+WORKDIR /app
 
-CMD [ "sonic", "-c", "/etc/sonic.cfg" ]
+COPY --from=build /app/target/release/entry-server /app/entry-server
 
-EXPOSE 1491
+CMD [ "entry-server" ]
+
+EXPOSE 3000
