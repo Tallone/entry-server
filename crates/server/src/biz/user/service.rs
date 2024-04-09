@@ -81,8 +81,8 @@ pub async fn get_user_by_token(token: &str, conn: &DatabaseConnection) -> Result
   let redis = util::cache::redis().await;
   let uid: Option<String> = redis.get(&key).await?;
   match uid {
-    Some(v) => return get_user(&v, &conn).await,
-    None => return Ok(None),
+    Some(v) => get_user(&v, conn).await,
+    None => Ok(None),
   }
 }
 

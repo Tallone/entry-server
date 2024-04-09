@@ -28,9 +28,9 @@ impl GithubOAuthStrategy {
   pub fn new() -> &'static Self {
     INSTANCE.get_or_init(|| {
       let client_id = env::var(consts::ENV_GITHUB_CLIENT_ID)
-        .expect(format!("Missing environment {}", consts::ENV_GITHUB_CLIENT_ID).as_str());
+        .unwrap_or_else(|_| panic!("Missing environment {}", consts::ENV_GITHUB_CLIENT_ID));
       let client_secret = env::var(consts::ENV_GITHUB_CLIENT_SECRET)
-        .expect(format!("Missing environment {}", consts::ENV_GITHUB_CLIENT_SECRET).as_str());
+        .unwrap_or_else(|_| panic!("Missing environment {}", consts::ENV_GITHUB_CLIENT_SECRET));
 
       Self {
         client_id,
@@ -76,7 +76,7 @@ impl OAuthStrategy for GithubOAuthStrategy {
     // Check state is in cache
     let redirect_url: String = util::cache::redis()
       .await
-      .get(self.get_state_cache_key(&state))
+      .get(self.get_state_cache_key(state))
       .await
       .map_err(|_| OAuthError::InvalidState)?;
 
@@ -104,9 +104,7 @@ impl OAuthStrategy for GithubOAuthStrategy {
       return Ok(ac.to_owned());
     }
 
-    Err(OAuthError::Other(anyhow!(
-      response.to_string(),
-    )))
+    Err(OAuthError::Other(anyhow!(response.to_string(),)))
   }
 
   async fn get_user(&self, token: &str) -> Result<AuthUser> {

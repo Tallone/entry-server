@@ -47,7 +47,7 @@ pub(crate) async fn oauth_login(
   let record = match service::Query::get_opt(&db.conn, GetReq::Email(auth_user.email.clone())).await? {
     Some(u) => u,
     None => {
-      let u = service::Mutation::create(
+      service::Mutation::create(
         &db.conn,
         users::ActiveModel {
           email: Set(auth_user.email),
@@ -56,8 +56,7 @@ pub(crate) async fn oauth_login(
           ..Default::default()
         },
       )
-      .await?;
-      u
+      .await?
     }
   };
 

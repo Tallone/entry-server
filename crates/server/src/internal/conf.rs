@@ -24,11 +24,11 @@ impl ApplicationConf {
     Self {
       db: DatabaseConf {
         url: std::env::var(cons::ENV_DATABASE_URL)
-          .expect(format!("Envirement {} is not valid", cons::ENV_DATABASE_URL).as_str()),
+          .unwrap_or_else(|_| panic!("Envirement {} is not valid", cons::ENV_DATABASE_URL)),
       },
       server: ServerConf {
         addr: std::env::var(cons::ENV_SERVER_ADDR)
-          .expect(format!("Envirement {} is not valid", cons::ENV_SERVER_ADDR).as_str()),
+          .unwrap_or_else(|_| panic!("Envirement {} is not valid", cons::ENV_SERVER_ADDR)),
       },
     }
   }

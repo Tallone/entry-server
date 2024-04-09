@@ -1,8 +1,8 @@
 #[macro_export]
 macro_rules! gen_query {
   ($entity:ident, $id:path) => {
-    use crate::internal::db::ColumnOrder;
     use sea_orm::{QueryOrder, QueryTrait};
+    use $crate::internal::db::ColumnOrder;
     pub(crate) struct Query;
 
     #[allow(dead_code)]
@@ -127,7 +127,7 @@ macro_rules! gen_mutation {
 #[macro_export]
 macro_rules! gen_crud {
   ($entity:ident, $id:path) => {
-    use crate::{gen_mutation, gen_query};
+    use $crate::{gen_mutation, gen_query};
     gen_query!($entity, $id);
     gen_mutation!($entity);
   };
