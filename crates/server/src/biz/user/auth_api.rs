@@ -1,16 +1,13 @@
 use std::str::FromStr;
 
-use axum::{
-  extract::{Path, Query, State},
-  Json,
-};
+use axum::extract::State;
 use oauth_client::{consts::OAuthProvider, get_strategy, OAuthStrategy};
 use sea_orm::Set;
 
 use crate::{
   biz::entity::users,
   internal::{db::DB, error::AppError},
-  middleware::response_wrapper::ApiResponse,
+  middleware::response_wrapper::{ApiResponse, Json, Path, Query},
 };
 
 use super::{

@@ -8,11 +8,8 @@ pub const MSG_INTERNAL_ERROR: &str = "Internal error";
 
 #[derive(Error, Debug)]
 pub enum AppError {
-  #[error(transparent)]
-  Biz(#[from] anyhow::Error),
-
-  #[error("Api is not found")]
-  ApiNotFound,
+  #[error("Unknown error: {0}")]
+  Unknown(String),
 
   #[error("IO Error: {0}")]
   IO(#[from] io::Error),
@@ -23,8 +20,14 @@ pub enum AppError {
   #[error("Redis Error: {0}")]
   Redis(#[from] RedisError),
 
-  #[error("Request is not valid")]
-  RequestNotValid,
+  #[error(transparent)]
+  Biz(#[from] anyhow::Error),
+
+  #[error("Api is not found")]
+  ApiNotFound,
+
+  #[error("Request is not valid: {0}")]
+  RequestNotValid(String),
 
   #[error("Resource not exist")]
   ResourceNotExist,
@@ -48,11 +51,12 @@ pub enum AppError {
 impl AppError {
   pub fn code(&self) -> u32 {
     match self {
+      AppError::Unknown(_) => 9999,
       AppError::Biz(_) => 8000,
       AppError::IO(_) => 1500,
       AppError::Db(_) => 1510,
       AppError::Redis(_) => 1520,
-      AppError::RequestNotValid => 4010,
+      AppError::RequestNotValid(_) => 4010,
       AppError::OAuth(_) => 4011,
       AppError::ResourceNotExist => 4040,
       AppError::InvalidToken => 4403,

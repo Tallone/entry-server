@@ -45,5 +45,6 @@ tower-http = { version = "0.5.2", features = [
   "cors",
   "set-header",
   "propagate-header",
+  "catch-panic",
 ] }
 http-body-util = "0.1.1"

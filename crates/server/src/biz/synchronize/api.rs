@@ -1,9 +1,12 @@
-use axum::{extract::State, Json};
+use axum::extract::State;
 
 use crate::{
   biz::entity::synchronize,
   internal::{db::DB, error::AppError},
-  middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
+  middleware::{
+    authenticator::LoginedUser,
+    response_wrapper::{ApiResponse, Json},
+  },
 };
 
 use super::{model::SaveReq, service};

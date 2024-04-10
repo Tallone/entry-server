@@ -22,9 +22,9 @@ pub async fn layer(req: Request, next: Next) -> Result<impl IntoResponse, ApiRes
   let req_id: String = parts
     .headers
     .get(cons::HEADER_REQUEST_ID)
-    .ok_or(AppError::RequestNotValid)?
+    .ok_or(AppError::Unknown("No x-request-id header".to_owned()))?
     .to_str()
-    .map_err(|_| AppError::RequestNotValid)?
+    .map_err(|e| AppError::Unknown(e.to_string()))?
     .to_owned();
 
   let is_multipart_request = parts
@@ -41,10 +41,10 @@ pub async fn layer(req: Request, next: Next) -> Result<impl IntoResponse, ApiRes
         .await
         .map_err(|e| {
           warn!("Collect request body failed {}", e);
-          AppError::RequestNotValid
+          AppError::RequestNotValid(e.to_string())
         })?
         .to_bytes();
-      let val: Value = serde_json::from_slice(&bytes).map_err(|_| AppError::RequestNotValid)?;
+      let val: Value = serde_json::from_slice(&bytes).map_err(|e| AppError::RequestNotValid(e.to_string()))?;
       val.to_string()
     }
   };

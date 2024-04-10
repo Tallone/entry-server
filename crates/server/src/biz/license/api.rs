@@ -1,9 +1,6 @@
 use std::{net::SocketAddr, time::Duration};
 
-use axum::{
-  extract::{ConnectInfo, Path, State},
-  Json,
-};
+use axum::extract::{ConnectInfo, Path, State};
 use sea_orm::{Set, TransactionTrait};
 
 use crate::{
@@ -12,7 +9,10 @@ use crate::{
     entity::{activations, licenses},
   },
   internal::{db::DB, error::AppError},
-  middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
+  middleware::{
+    authenticator::LoginedUser,
+    response_wrapper::{ApiResponse, Json},
+  },
 };
 
 use super::{model::ActiveReq, service};
@@ -21,14 +21,14 @@ type Result<T> = std::result::Result<ApiResponse<T>, AppError>;
 
 /// This api will return current user and special `license` state
 ///
-/// Client can used to verify license is still valid
+/// Client can be used to verify license is still valid
 pub async fn check(user: LoginedUser, State(db): State<DB>, Path(license): Path<String>) -> Result<licenses::Model> {
   // check license is exist
   let record = service::Query::get(&db.conn, licenses::Column::Key, &license)
     .await?
     .ok_or(AppError::ResourceNotExist)?;
 
-  // check license is actived by this user
+  // check license is active by this user
   activation::service::Query::get_by_uid_lk(&db.conn, user.0.id, &license)
     .await?
     .ok_or(AppError::LicenseNotValid)?;

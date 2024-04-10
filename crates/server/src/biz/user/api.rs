@@ -1,11 +1,14 @@
 use anyhow::anyhow;
-use axum::{extract::State, Json};
+use axum::extract::State;
 use sea_orm::{ActiveValue::*, Set};
 
 use crate::{
   biz::entity::users,
   internal::{db::DB, error::AppError},
-  middleware::{authenticator::LoginedUser, response_wrapper::ApiResponse},
+  middleware::{
+    authenticator::LoginedUser,
+    response_wrapper::{ApiResponse, Json},
+  },
 };
 
 use super::{

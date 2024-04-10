@@ -25,7 +25,7 @@ where
   async fn from_request_parts(parts: &mut axum::http::request::Parts, state: &S) -> Result<Self, Self::Rejection> {
     if let Some(token) = parts.headers.get(cons::HEADER_TOKEN) {
       let db = DB::from_ref(state);
-      let token = token.to_str().map_err(|_| AppError::RequestNotValid)?;
+      let token = token.to_str().map_err(|e| AppError::RequestNotValid(e.to_string()))?;
       let u = user::service::get_user_by_token(token, &db.conn)
         .await?
         .ok_or(AppError::InvalidToken)?;
