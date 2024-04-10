@@ -1,6 +1,6 @@
 use std::io;
 
-use oauth_client::consts::OAuthError;
+use oauth::consts::OAuthError;
 use thiserror::Error;
 use util::RedisError;
 

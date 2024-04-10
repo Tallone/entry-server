@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use axum::extract::State;
-use oauth_client::{consts::OAuthProvider, get_strategy, OAuthStrategy};
+use oauth::{consts::OAuthProvider, get_strategy, OAuthStrategy};
 use sea_orm::Set;
 
 use crate::{

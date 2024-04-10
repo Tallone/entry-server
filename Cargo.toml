@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/server", "crates/oauth_client", "crates/task", "crates/util"]
+members = ["crates/server", "crates/oauth", "crates/task", "crates/util"]
 default-members = ["crates/server"]
 [workspace.package]
 version = "0.1.0"
@@ -22,11 +22,10 @@ once_cell = "1.19.0"
 pingora-memory-cache = "0.1.0"
 sea-orm = "0.12.15"
 uuid = { version = "1.7.0", features = ["v4", "serde"] }
-
 server = { path = "crates/server" }
 util = { path = "crates/util" }
 task = { path = "crates/task" }
-oauth_client = { path = "crates/oauth_client" }
+oauth = { path = "crates/oauth" }
 time = { version = "0.3.34", features = ["serde-human-readable", "macros"] }
 
 [profile.dev]
