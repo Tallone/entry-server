@@ -6,7 +6,7 @@ use dotenvy::dotenv;
 use log::info;
 use tokio::sync::broadcast;
 
-use crate::internal::{app_state::AppState, conf::ApplicationConf, db::DB, logger};
+use crate::internal::{app_state::AppState, conf::ApplicationConf, db::DB, logger, router_tree::RouteNode};
 
 mod biz;
 mod cons;
@@ -33,6 +33,9 @@ async fn main() -> anyhow::Result<()> {
   task::start_tick(Duration::from_millis(100), rx);
 
   let state = AppState { db };
+
+  let mut api_tree = RouteNode::new("/api");
+
   let app = Router::new()
     .nest("/api", biz::router())
     .with_state(state)
