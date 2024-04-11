@@ -1,7 +1,6 @@
-use serde::{Deserialize};
-
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct SaveReq {
-    pub content: String
+  pub content: String,
 }
