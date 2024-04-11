@@ -11,7 +11,7 @@ mod tests {
   use dotenvy::dotenv;
   use log::info;
   use sea_orm::{Order, Set};
-  use time::{Duration};
+  use time::Duration;
   use uuid::Uuid;
 
   async fn init() -> DB {
