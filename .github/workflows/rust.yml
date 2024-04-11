@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  entry-server:
+    strategy:
+      matrix:
+        # TODO: add nightly
+        toolchain: [stable]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rustfmt, clippy
+    - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+    - name: Run cargo test
+        run: cargo test --verbose --lib --bins --tests --no-fail-fast
+    - name: Run cargo clippy
+        run: cargo clippy --all-targets --all -- --deny=warnings
+    - name: Run cargo audit
+        uses: actions-rust-lang/audit@v1
