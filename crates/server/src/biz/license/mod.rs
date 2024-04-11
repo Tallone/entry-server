@@ -1,19 +1,19 @@
-use axum::{handler::Handler, http::Method, routing::get, Router};
+use axum::{
+  http::Method,
+  routing::{get, post},
+};
 
-use crate::internal::{app_state::AppState, router_tree::RouteNode};
+use crate::internal::router_tree::RouteNode;
 
 mod api;
 mod model;
 pub(crate) mod service;
 
-pub fn router() -> Router<AppState> {
-  Router::new().route("/:license", get(api::check).post(api::active))
-}
+pub fn apis() -> RouteNode {
+  let mut node = RouteNode::new("/:license");
+  node
+    .handler(Method::GET, get(api::check))
+    .handler(Method::POST, post(api::active));
 
-pub fn register_apis<H, T>(parent: &mut RouteNode<H, AppState>)
-where
-  H: Handler<T, AppState>,
-  T: 'static,
-{
-  parent.path("/:license").handler(api::check, Method::GET);
+  node
 }

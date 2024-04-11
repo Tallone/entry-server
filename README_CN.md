@@ -20,6 +20,21 @@ Entry-Server 是一个强大、完备的 Rust 后端项目，可直接使用。�
 
 [看这里](tests/README.md)
 
+| Method | Endpoint                     |
+---------|-------------------------------
+| GET    | /api/v1/license/:license     |
+| POST   | /api/v1/license/:license     |
+| GET    | /api/v1/user                 |
+| POST   | /api/v1/user                 |
+| POST   | /api/v1/user/login           |
+| PATCH  | /api/v1/user/password        |
+| GET    | /api/v1/user/oauth/:provider |
+| POST   | /api/v1/user/oauth/:provider |
+| GET    | /api/v1/sync                 |
+| POST   | /api/v1/sync                 |
+| DELETE | /api/v1/sync                 |
+
+
 ## **技术堆栈**
 
 - 开发语言：[Rust](https://www.rust-lang.org/)

@@ -20,6 +20,20 @@ Entry-Server is a robust, fully-equipped backend project in Rust that's ready fo
 
 [see here](tests/README.md)
 
+| Method | Endpoint                     |
+---------|-------------------------------
+| GET    | /api/v1/license/:license     |
+| POST   | /api/v1/license/:license     |
+| GET    | /api/v1/user                 |
+| POST   | /api/v1/user                 |
+| POST   | /api/v1/user/login           |
+| PATCH  | /api/v1/user/password        |
+| GET    | /api/v1/user/oauth/:provider |
+| POST   | /api/v1/user/oauth/:provider |
+| GET    | /api/v1/sync                 |
+| POST   | /api/v1/sync                 |
+| DELETE | /api/v1/sync                 |
+
 ## **Technology Stack**
 
 - Development Language: [Rust](https://www.rust-lang.org/)

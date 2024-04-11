@@ -1,111 +1,121 @@
-use axum::{
-  handler::Handler,
-  http::{Method, Request, Response, StatusCode},
-  routing::{get, on, post, MethodFilter, MethodRouter},
-  Router,
+use axum::{http::Method, routing::MethodRouter, Router};
+use log::info;
+use prettytable::{
+  format::{FormatBuilder, LinePosition, LineSeparator},
+  row, Cell, Row, Table,
 };
-use std::{collections::HashMap, marker::PhantomData};
 
+use super::app_state::AppState;
+
+// Defines the different types of nodes in the routing tree
 enum NodeType<H> {
-  Leaf { handler: H, method: Method },
+  // Leaf node represents a specific route handler
+  Leaf(Method, H),
+  // Branch node represents a branch in the routing tree
   Branch,
 }
 
-pub struct RouteNode<H, S> {
+// Represents a node in the routing tree
+pub struct RouteNode {
+  // The path associated with this node
   path: String,
-  node_type: NodeType<H>,
-  children: HashMap<String, RouteNode<H, S>>,
-  _s: PhantomData<S>,
+  // The type of this node (Leaf or Branch)
+  node_type: NodeType<MethodRouter<AppState>>,
+  // The child nodes of this node
+  children: Vec<RouteNode>,
 }
 
-impl<H, S> RouteNode<H, S>
-where
-  S: Clone + Send + Sync + 'static,
-{
+impl RouteNode {
+  // Creates a new branch node with the given path
   pub fn new(path: &str) -> Self {
     RouteNode {
       path: path.to_string(),
       node_type: NodeType::Branch,
-      children: HashMap::new(),
-      _s: PhantomData,
+      children: Vec::new(),
     }
   }
-
-  pub fn path(&mut self, path: &str) -> Self {
+  // Adds a new path segment to the current node, creating new branch nodes as needed.
+  // This function will return latest segment as node
+  pub fn path(&mut self, path: &str) -> &mut Self {
     let mut current_node = self;
     let mut parts = path.split('/').filter(|p| !p.is_empty());
 
     while let Some(part) = parts.next() {
       // Create a new branch node if it doesn't exist
-      let child_node = current_node
-        .children
-        .entry(part.to_string())
-        .or_insert_with(|| RouteNode::new(part));
-      current_node = child_node;
+      let child_node = Self::new(part);
+      current_node.children.push(child_node);
+      current_node = current_node.children.last_mut().unwrap();
     }
-    *current_node
+    current_node
   }
 
-  pub fn handler<T>(&mut self, handler: H, method: Method) -> &mut Self
-  where
-    H: Handler<T, S>,
-    T: 'static,
-  {
+  // Adds a new leaf node with the given method and handler to the current node
+  pub fn handler(&mut self, method: Method, handler: MethodRouter<AppState>) -> &mut Self {
     let h = Self {
-      node_type: NodeType::Leaf { handler, method },
+      node_type: NodeType::Leaf(method, handler),
       path: String::default(),
-      children: HashMap::default(),
-      _s: PhantomData,
+      children: Vec::new(),
     };
-    self.children.insert(method.to_string(), h);
+    self.children.push(h);
     self
   }
 
-  pub fn nest(&mut self, other: Self) {
-    let other_path = other.path.trim_start_matches('/');
-    let mut parts = other_path.split('/').filter(|p| !p.is_empty());
+  // Nests another RouteNode under the current node
+  pub fn nest(&mut self, path: &str, mut other: Self) -> &mut Self {
+    let parent = self.path(path);
+    other.path = other.path.trim_start_matches("/").to_owned();
+    parent.children.push(other);
+    self
+  }
 
-    let mut current_node = self;
-    while let Some(part) = parts.next() {
-      let child_node = current_node
-        .children
-        .entry(part.to_string())
-        .or_insert_with(|| RouteNode::new(part));
-      current_node = child_node;
+  // Converts the current node and its children into an Axum router
+  pub fn to_axum_router(self) -> Router<AppState> {
+    let router = Router::new();
+    let mut path = self.path.clone();
 
-      if parts.next().is_none() {
-        // This is the last part, merge the other node
-        current_node.node_type = other.node_type;
-        current_node.children = other.children;
+    let mut table = Table::new();
+    // This format can directly used in markdown
+    let format = FormatBuilder::new()
+      .padding(1, 1)
+      .separators(&[LinePosition::Title], LineSeparator::new('-', '|', '-', '-'))
+      .column_separator('|')
+      .borders('|')
+      .build();
+    table.set_format(format);
+    table.set_titles(row!["Method", "Endpoint"]);
+
+    let ret = Self::add_to_axum_router(self, &mut table, &mut path, router);
+    info!("\n{}", table.to_string());
+    ret
+  }
+
+  fn add_to_axum_router(
+    node: RouteNode,
+    table: &mut Table,
+    path: &mut String,
+    mut router: Router<AppState>,
+  ) -> Router<AppState> {
+    if let NodeType::Leaf(m, h) = node.node_type {
+      table.add_row(Row::new(vec![Cell::new(&m.to_string()), Cell::new(&path)]));
+      return router.route(&path, h);
+    }
+
+    for child in node.children {
+      if let NodeType::Branch = child.node_type {
+        if child.path.is_empty() {
+          router = Self::add_to_axum_router(child, table, path, router);
+        } else {
+          path.push('/');
+          path.push_str(&child.path);
+          let l = child.path.len() + 1;
+          router = Self::add_to_axum_router(child, table, path, router);
+          path.truncate(path.len() - l);
+        }
+      } else {
+        router = Self::add_to_axum_router(child, table, path, router);
       }
     }
-  }
 
-  pub fn to_axum_router<T>(&self) -> Router<S>
-  where
-    H: Handler<T, S>,
-    T: 'static,
-  {
-    let mut router = Router::new();
-    self.add_to_axum_router(&mut router);
     router
-  }
-
-  fn add_to_axum_router<T>(&self, router: &mut Router<S>)
-  where
-    H: Handler<T, S>,
-    T: 'static,
-  {
-    if let NodeType::Leaf { handler, method } = &self.node_type {
-      match method {
-        &Method::GET => router.route(&self.path, on(MethodFilter::GET, *handler)),
-        &Method::POST => router.route(&self.path, on(MethodFilter::POST, *handler)),
-        _ => panic!("Unsupported HTTP method: {}", method),
-      };
-    } else {
-      for child in self.children.values() {
-        child.add_to_axum_router(router);
-      }
-    };
   }
 }

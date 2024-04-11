@@ -1,7 +1,5 @@
 use std::{net::SocketAddr, time::Duration};
 
-use anyhow::Ok;
-use axum::Router;
 use dotenvy::dotenv;
 use log::info;
 use tokio::sync::broadcast;
@@ -34,12 +32,15 @@ async fn main() -> anyhow::Result<()> {
 
   let state = AppState { db };
 
+  // Construct api tree
   let mut api_tree = RouteNode::new("/api");
-
-  let app = Router::new()
-    .nest("/api", biz::router())
+  biz::init(&mut api_tree);
+  let route = api_tree.to_axum_router();
+  let app = route
     .with_state(state)
     .fallback(middleware::response_wrapper::handle_404);
+
+  // Integrate middlerwares
   let app = middleware::init(app);
 
   let listener = tokio::net::TcpListener::bind(&conf.server.addr).await?;

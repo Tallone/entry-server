@@ -43,3 +43,4 @@ tower-http = { version = "0.5.2", features = [
   "catch-panic",
 ] }
 http-body-util = "0.1.1"
+prettytable-rs = "0.10.0"
