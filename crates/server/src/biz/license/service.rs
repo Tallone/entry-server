@@ -11,7 +11,7 @@ mod tests {
   use dotenvy::dotenv;
   use log::info;
   use sea_orm::{Order, Set};
-  use time::{Duration, OffsetDateTime};
+  use time::{Duration};
   use uuid::Uuid;
 
   async fn init() -> DB {
@@ -41,13 +41,13 @@ mod tests {
     .await
     .unwrap();
     assert!(v.id > 0);
-    let id = v.id.clone();
+    let id = v.id;
     let v = Query::get(&db.conn, licenses::Column::Key, v.key).await.unwrap();
     assert!(v.is_some());
     let v = Query::get_by_id(&db.conn, id).await.unwrap();
     assert!(v.is_some());
     assert_eq!(v.unwrap().id, id);
-    let v = Mutation::update(
+    let _v = Mutation::update(
       &db.conn,
       licenses::ActiveModel {
         id: Set(id),
