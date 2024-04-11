@@ -38,9 +38,9 @@ impl RouteNode {
   // This function will return latest segment as node
   pub fn path(&mut self, path: &str) -> &mut Self {
     let mut current_node = self;
-    let mut parts = path.split('/').filter(|p| !p.is_empty());
+    let parts = path.split('/').filter(|p| !p.is_empty());
 
-    while let Some(part) = parts.next() {
+    for part in parts {
       // Create a new branch node if it doesn't exist
       let child_node = Self::new(part);
       current_node.children.push(child_node);
@@ -63,12 +63,13 @@ impl RouteNode {
   // Nests another RouteNode under the current node
   pub fn nest(&mut self, path: &str, mut other: Self) -> &mut Self {
     let parent = self.path(path);
-    other.path = other.path.trim_start_matches("/").to_owned();
+    other.path = other.path.trim_start_matches('/').to_owned();
     parent.children.push(other);
     self
   }
 
   // Converts the current node and its children into an Axum router
+  #[allow(clippy::wrong_self_convention)]
   pub fn to_axum_router(self) -> Router<AppState> {
     let router = Router::new();
     let mut path = self.path.clone();
@@ -96,8 +97,8 @@ impl RouteNode {
     mut router: Router<AppState>,
   ) -> Router<AppState> {
     if let NodeType::Leaf(m, h) = node.node_type {
-      table.add_row(Row::new(vec![Cell::new(&m.to_string()), Cell::new(&path)]));
-      return router.route(&path, h);
+      table.add_row(Row::new(vec![Cell::new(m.as_ref()), Cell::new(path)]));
+      return router.route(path, h);
     }
 
     for child in node.children {
