@@ -1,9 +1,9 @@
-
-
 # Entry-Server
 
-
-[中文](README_CN.md)
+<p align="center">
+  <a href="./README.md"><img alt="Commits last month" src="https://img.shields.io/badge/English-d9d9d9"></a>
+  <a href="./README_CN.md"><img alt="Commits last month" src="https://img.shields.io/badge/简体中文-d9d9d9"></a>
+</p>
 
 Entry-Server is a robust, fully-equipped backend project in Rust that's ready for use. Whether you're an independent developer or part of a small startup team looking to streamline server-side development, this project could be just what you need.
 

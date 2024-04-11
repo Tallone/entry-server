@@ -1,9 +1,10 @@
-
-
 # Entry-Server
 
+<p align="center">
+  <a href="./README.md"><img alt="Commits last month" src="https://img.shields.io/badge/English-d9d9d9"></a>
+  <a href="./README_CN.md"><img alt="Commits last month" src="https://img.shields.io/badge/简体中文-d9d9d9"></a>
+</p>
 
-[English](README.md)
 
 Entry-Server 是一个强大、完备的 Rust 后端项目，可直接使用。无论您是独立开发者还是小型创业团队的一员，希望简化服务器端开发，这个项目都可能是您所需要的。
 
