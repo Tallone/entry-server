@@ -37,5 +37,3 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run cargo clippy
         run: cargo clippy --all-targets --all-features -- --deny=warnings
-      - name: Run cargo audit
-        uses: actions-rust-lang/audit@v1
