@@ -10,7 +10,6 @@ jobs:
   entry-server:
     strategy:
       matrix:
-        # TODO: add nightly
         toolchain: [stable]
     runs-on: ubuntu-latest
 
@@ -21,6 +20,19 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
           components: rustfmt, clippy
+
+      - name: Show version information (Rust, cargo, GCC)
+        shell: bash
+        run: |
+          gcc --version || true
+          rustup -V
+          rustup toolchain list
+          rustup default
+          cargo -V
+          rustc -V
+
+      - uses: Swatinem/rust-cache@v2
+
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
       - name: Run cargo clippy

@@ -36,7 +36,6 @@ pub(crate) async fn oauth_login(
   State(db): State<DB>,
   Json(payload): Json<OAuthLoginReq>,
 ) -> Result<String> {
-  // TODO: Verify payload
   let provider = OAuthProvider::from_str(&provider)?;
   let strategy = get_strategy(provider);
   let access_token = strategy.get_access_token(&payload.code, &payload.state).await?;
